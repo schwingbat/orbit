@@ -1,5 +1,5 @@
 {
-  "name": "pickr",
+  "name": "orbit",
   "version": "1.0.0",
   "description": "An elegant, simple JavaScript color picker app.",
   "main": "pickr.html",
