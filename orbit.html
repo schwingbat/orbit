@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Orbit: HUEHUEHUE!</title>
+        <link rel="stylesheet" href="css/orbit.css">
+        <link rel="icon" type="images/png" href="logo.png">
+    </head>
+    <body>
+        <script id="template" type="text/ractive">
+            <div id="orbit"
+                {{#if output.isLight}} class="dark" {{/if}}
+                style="background: hsl({{hue}},{{saturation+'%'}},{{lightness+'%'}})">
+
+                <div class="vertical-centerer">
+
+                    <!-- HSL wheel -->
+
+                    <div class="wheel">
+                        <img src="colors.png" class="colors {{#if input.hue}}active{{/if}}">
+                        <div class="hue-guide"></div>
+                        <div class="hue-wheel" style="transform: rotate({{hue}}deg)">
+                            <div class="handle {{#if input.hue}}active{{/if}}"
+                                {{#if input.hue}} style="background-color: hsl({{hue}}, 100%, 50%)" {{/if}}>
+                            </div>
+                        </div>
+                        <div class="inner">
+                            <ul class="properties">
+                                <li>
+                                    <span class="label">SATURATION</span>
+                                    <div class="saturation slider">
+                                        <div class="knob" style="{{#if input.sat}}background: hsl({{hue}}, {{saturation+'%'}}, 50%); border: 2px solid;{{/if}} margin-left: {{saturationSlider+'%'}}" ></div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="label">LIGHTNESS</span>
+                                    <div class="lightness slider">
+                                        <div class="knob" style="{{#if input.light}}background: hsl({{hue}}, 0%, {{lightness+'%'}}); border: 2px solid;{{/if}} margin-left: {{lightnessSlider+'%'}}" ></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div> <!-- /wheel -->
+
+                    <!-- Converted Colors -->
+
+                    <ul class="formats">
+                        <li class="hsl">
+                            <span class="label">HSL</span>
+                            <span class="result">{{hue}}, {{saturation+'%'}}, {{lightness+'%'}}</span>
+                        </li>
+                        <li class="hex">
+                            <span class="label">HEX</span>
+                            <span class="result">{{output.hex}}</span>
+                        </li>
+                        <li class="rgb">
+                            <span class="label">RGB</span>
+                            <span class="result">{{output.rgb}}</span>
+                        </li>
+                    </ul> <!-- /results -->
+
+                </div> <!-- /vertical-centerer -->
+
+            </div> <!-- /orbit -->
+        </script>
+
+        <script src="bower_components/ractive/ractive.min.js"></script>
+        <script src="bower_components/tinycolor/dist/tinycolor-min.js"></script>
+        <script src="js/orbit.js"></script>
+    </body>
+</html>

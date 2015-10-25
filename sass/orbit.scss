@@ -1,0 +1,214 @@
+$trans-speed: 0.2s;
+
+*, *:before, *:after { box-sizing: border-box; }
+
+/* Utility Classes */
+.disabled { user-select: none; }
+.no-transition { transition: none !important; }
+
+.label {
+    user-select: none;
+    pointer-events: none;
+}
+
+body {
+    font-family: 'Input', sans-serif;
+    font-size: 13px;
+}
+
+#orbit {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    color: #fff;
+    border-color: #fff;
+
+    &.dark {
+        color:#222;
+        border-color: #222;
+
+        .slider,
+        .handle,
+        .scheme-chooser li.active {
+            background: #222;
+        }
+        .handle.active { border-color: #222; }
+    }
+}
+
+.vertical-centerer {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-color: inherit;
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    @media (min-width: 600px) {
+        flex-direction: row;
+        width: 540px;
+        height: 400px;
+        position: absolute;
+        overflow: visible;
+        top: calc(50% - 200px);
+        left: calc(50% - 270px);
+    }
+}
+
+/************************
+        Hue Wheel
+************************/
+
+$wheel: 310px;
+
+/* Outer Wheel */
+
+@mixin circle($size) {
+    content: "";
+    border-radius: 50%;
+    width: $size;
+    height: $size;
+}
+
+.wheel, .umbrella, .color {
+    @include circle($wheel);
+}
+
+.wheel {
+    width: $wheel;
+    height: $wheel;
+    margin: 0;
+    position: relative;
+
+    .inner {
+        position: absolute;
+        left: 75px; top: 75px; bottom: 75px; right: 75px;
+        display: flex;
+        align-items: center;
+    }
+
+    .hue-guide {
+        @include circle(280px);
+        border: 1px solid;
+        border-color: inherit;
+        transition: $trans-speed;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+    }
+
+    .hue-wheel {
+        position: absolute;
+        top: 0; left: 0;
+        width: $wheel;
+        height: $wheel;
+        //transition: transform $trans-speed;
+
+        .handle {
+            margin: 0 auto;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background-color: #fff;
+            cursor: grab;
+            &.active { border-color: #fff; }
+        }
+    }
+
+    .colors {
+        width: $wheel;
+        height: $wheel;
+        transition: 0.4s;
+        transform: scale(0.5);
+        opacity: 0;
+        pointer-events: none;
+        &.active {
+            opacity: 1;
+            transform: scale(1.5);
+        }
+    }
+}
+
+/* Saturation and Lightness Sliders */
+
+.properties {
+    padding: 0;
+    margin: 0 auto;
+    list-style: none;
+    width: 100%;
+    border-color: inherit;
+
+    li {
+        margin-bottom: 35px;
+        position: relative;
+        border-color: inherit;
+        &:last-child { margin-bottom: 0; }
+
+        .label {
+            display: block;
+            color: inherit;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .slider {
+            width: 100%;
+            height: 1px;
+            background: #fff;
+            display: block;
+            margin: 18px 0;
+
+            .knob {
+                display: inline-block;
+                margin-top: -15px;
+                width: 30px;
+                height: 30px;
+                background: inherit;
+                border-radius: 50%;
+                cursor: grab;
+            }
+        }
+    }
+}
+
+/************************
+    Converted Colors
+************************/
+
+.formats {
+    list-style: none;
+    width: 280px;
+    margin: 30px auto 0 auto;
+    padding: 0 0 5% 0;
+
+    @media (min-width: 600px) {
+        margin: auto 0 auto auto;
+        width: 200px;
+    }
+
+    li {
+        border: 1px solid;
+        border-radius: 9999px;
+        padding: 12px 20px;
+        width: 100%;
+        transition: $trans-speed;
+        text-align: right;
+        margin-bottom: 12px;
+
+        color: inherit;
+        border-color: inherit;
+
+        &:last-child { margin-bottom: 0; }
+    }
+
+    .label {
+        float: left;
+        font-weight: bold;
+        -webkit-user-select: none;
+    }
+}
