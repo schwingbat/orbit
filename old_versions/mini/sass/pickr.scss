@@ -1,0 +1,407 @@
+$trans-speed: 0.2s;
+
+*, *:before, *:after { box-sizing: border-box; }
+
+/* Utility Classes */
+.disabled { user-select: none; }
+.no-transition { transition: none !important; }
+
+.label {
+    user-select: none;
+    pointer-events: none;
+}
+
+body {
+    font-family: 'Input', sans-serif;
+    font-size: 13px;
+}
+
+#pickr {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    display: flex;
+    color: #fff;
+    border-color: #fff;
+    &.dark {
+        color:#222;
+        border-color: #222;
+
+        .slider,
+        .selector,
+        .scheme-chooser li.active {
+            background: #222;
+        }
+        .selector.active { border-color: #222; }
+    }
+}
+
+.vertical-centerer {
+    position: relative;
+    width: 610px;
+    height: 310px;
+    margin: 0 auto;
+    display: flex;
+    border-color: inherit;
+    align-self: center;
+
+    //border: 1px dashed;
+}
+
+/************************
+       Color Wheel
+************************/
+
+$wheel: 310px;
+
+/* Outer Wheel */
+
+@mixin circle($size) {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    left: calc(50% - #{$size/2});
+    top: calc(50% - #{$size/2});
+    width: $size;
+    height: $size;
+}
+
+.wheel, .umbrella, .color {
+    @include circle($wheel);
+}
+
+.wheel {
+    width: $wheel;
+    height: $wheel;
+    position: absolute;
+    top: 0; left: 80px; bottom: 0;
+    display: flex;
+
+    .inner {
+        position: absolute;
+        left: 75px; top: 75px; bottom: 75px; right: 75px;
+        display: flex;
+        align-items: center;
+    }
+
+    .hue-guide {
+        @include circle(280px);
+        border: 1px solid;
+        border-color: inherit;
+        transition: $trans-speed;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+    }
+
+    .hue-wheel {
+        position: absolute;
+        top: 0; left: 0;
+        width: $wheel;
+        height: $wheel;
+        //transition: transform $trans-speed;
+
+        .selector {
+            margin: 0 auto;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background: #fff;
+            //transition: border $trans-speed;
+            cursor: grab;
+            &.active { border-color: #fff; }
+        }
+    }
+
+    .colors {
+        width: $wheel;
+        height: $wheel;
+        transition: 0.4s;
+        transform: scale(0.5);
+        opacity: 0;
+        pointer-events: none;
+        &.active {
+            opacity: 1;
+            transform: scale(1.5);
+        }
+    }
+}
+
+/* Saturation and Lightness Sliders */
+
+.properties {
+    padding: 0;
+    margin: 0 auto;
+    list-style: none;
+    width: 100%;
+    border-color: inherit;
+
+    li {
+        margin-bottom: 35px;
+        position: relative;
+        border-color: inherit;
+        &:last-child { margin-bottom: 0; }
+
+        //border: 1px dotted;
+
+        .hex {
+            font-size: 1.2rem;
+            text-align: center;
+
+            span {
+                //border: 1px solid;
+                padding: 0.5rem 1rem;
+                display: inline-block;
+                border-radius: 9999px;
+            }
+        }
+
+        .label {
+            display: block;
+            color: inherit;
+            margin-bottom: 4px;
+            text-align: center;
+            transition: $trans-speed;
+            display: none;
+        }
+
+        .slider {
+            width: 100%;
+            height: 1px;
+            background: #fff;
+            display: block;
+            margin: 18px 0;
+            //transition: background $trans-speed;
+            .knob {
+                display: inline-block;
+                margin-top: -15px;
+                width: 30px;
+                height: 30px;
+                background: inherit;
+                border-radius: 50%;
+                //transition: background $trans-speed, border $trans-speed;
+                cursor: grab;
+            }
+        }
+    }
+}
+
+/************************
+    Converted Colors
+************************/
+
+.results {
+    list-style: none;
+    position: absolute;
+    bottom: 40px; left: 400px;
+    padding: 0;
+
+    //border: 1px solid;
+
+    li {
+        border: 1px solid;
+        border-radius: 9999px;
+        padding: 12px 20px;
+        color: inherit;
+        border-color: inherit;
+        transition: $trans-speed;
+        text-align: right;
+        width: 200px;
+        margin-bottom: 8px;
+
+        &:nth-child(1) { margin-left: 20px; }
+        &:nth-child(2) { margin-left: 16px; }
+        &:nth-child(3) { margin-left: 0; }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .label {
+        float: left;
+        font-weight: bold;
+        -webkit-user-select: none;
+    }
+}
+
+/************************
+      Color Scheme
+************************/
+
+.scheme-chooser {
+    position: absolute;
+    top: 40px;
+    left: 400px;
+    width: 300px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-color: inherit;
+
+    //border: 1px dotted;
+
+    li {
+        padding: 12px 20px;
+        display: inline-block;
+        border-color: inherit;
+        border: 1px solid;
+        float: left;
+        cursor: pointer;
+        transition: background $trans-speed, color $trans-speed, border $trans-speed;
+
+        &:first-child {
+            border-radius: 999px 0 0 999px;
+            border-right: 1px solid;
+            padding-right: 16px;
+        }
+
+        &:last-child {
+            padding-left: 16px;
+            border-radius: 0 999px 999px 0;
+            border-left: 0;
+        }
+
+        &.active {
+            background: #fff;
+            color: #222;
+            border-color: inherit;
+        }
+    }
+}
+
+.scheme {
+    width: 100%;
+    display: block;
+    width: 80px;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+
+    //border: 1px dotted;
+
+    .swatches {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        height: inherit;
+
+        //border: 1px solid;
+
+        li {
+            display: inline-block;
+            border-radius: 50%;
+            height: 50px;
+            width: 50px;
+            margin: 0;
+            cursor: pointer;
+
+            border: 1px solid;
+            transition: border $trans-speed, background 0.15s;
+            padding: 0.2rem;
+
+            &:nth-child(2),
+            &:nth-child(4) {
+                //width: 40px;
+                //height: 40px;
+                margin-left: 10px;
+            }
+
+            &:nth-child(2) { margin-bottom: 10px; margin-top: 4px; }
+            &:nth-child(4) { margin-top: 10px; margin-bottom: 4px; }
+
+            &:first-child,
+            &:last-child {
+                //width: 35px;
+                //height: 35px;
+                margin-left: 40px;
+            }
+        }
+    }
+}
+
+/************************
+        Predefined
+        Color List
+************************/
+
+.color-list {
+    z-index: 100;
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 300px;
+    //background: #222;
+    color: #fff;
+    display: none;
+
+    .top-bar {
+        height: 50px;
+        width: 100%;
+        display: flex;
+
+        h2 {
+            align-self: center;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            line-height: 1;
+            margin: 0;
+            padding: 0;
+        }
+        .close {
+            position: absolute;
+            right: 0;
+            height: 50px;
+            width: 50px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            span {
+                line-height: 1;
+                font-size: 2rem;
+                margin: 0 auto;
+            }
+        }
+    }
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0.5rem;
+
+        li {
+            width: 100%;
+            overflow: auto;
+            //padding: 1rem;
+            //border-radius: 9999px;
+            position: relative;
+            margin-bottom: 1rem;
+
+            //border: 1px solid white;
+
+            .swatch {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                float: left;
+                display: inline-block;
+                //border: 1px solid red;
+            }
+
+            .text {
+
+                .color-name {
+                    display: block;
+                    font-weight: bold;
+                    //font-size: 1.2rem;
+                    margin-bottom: 0.3rem;
+                }
+
+                .color-codes {
+                    display: block;
+                    font-size: 0.8rem;
+                }
+            }
+        }
+    }
+}

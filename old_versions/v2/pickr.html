@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Pickr</title>
+        <link rel="stylesheet" href="css/pickr.css">
+    </head>
+    <body>
+        <div id="container"></div>
+
+        <script id="template" type="text/ractive">
+        <div class="vertical-center" >
+            <!-- style="background: hsl({{hue}},{{saturation+'%'}},{{lightness+'%'}})" -->
+            <div id="pickr" {{#if output.isLight}}class="dark"{{/if}}>
+                <div class="wheel">
+                    <img src="colors.png" class="colors {{#if input.hue}}active{{/if}}">
+
+                    <ul class="umbrella {{#if input.hue}}active{{/if}}">
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                        <li class="color"></li>
+                    </ul>
+                    <div class="value-overlay"></div>
+                    <div class="old-selector"><div class="point"></div></div>
+                    <div class="inner">
+                        <div class="slsquare"></div>
+                        <ul class="properties">
+                            <li>
+                                <span class="label">SATURATION</span>
+                                <input type="range"
+                                    class="saturation input {{#if input.sat}}active{{/if}}"
+                                    min="0" max="100" value="20" step="1"
+                                    oninput="pickr.set('saturation', this.value)">
+                                <div class="guide"></div>
+                            </li>
+                            <li>
+                                <span class="label">LIGHTNESS</span>
+                                <input type="range"
+                                    class="lightness input {{#if input.light}}active{{/if}}"
+                                    min="0" max="100" value="20" step="1"
+                                    oninput="pickr.set('lightness', this.value)">
+                                <div class="guide"></div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="hue-guide"></div>
+                    <div class="hue-wheel">
+                        <div
+                            class="selector {{#if input.hue}}active{{/if}}"
+                        {{#if input.hue}}
+                            style="background: hsl({{hue}}, 100%, 50%)"
+                        {{/if}}
+                        >
+                        </div>
+                    </div>
+                </div> <!-- /wheel -->
+
+                <ul class="results">
+                    <li class="hsl">
+                        <span class="label">HSL</span>
+                        <span class="result">{{hue}}, {{saturation}}%, {{lightness}}%</span>
+                    </li>
+                    <li class="hex">
+                        <span class="label">HEX</span>
+                        <span class="result">{{output.hex}}</span>
+                    </li>
+                    <li class="rgb">
+                        <span class="label">RGB</span>
+                        <span class="result">{{output.rgb}}</span>
+                    </li>
+                </ul> <!-- /results -->
+
+                <div class="scheme">
+                    <ul class="swatches">
+                        <li><span class="label">#333333</span></li>
+                        <li><span class="label">#333333</span></li>
+                        <li><span class="label">#333333</span></li>
+                        <li><span class="label">#333333</span></li>
+                        <li><span class="label">#333333</span></li>
+                    </ul>
+                    <div class="caret"></div>
+                </div>
+            </div> <!-- /pickr -->
+        </div> <!-- /vertical-center -->
+        </script>
+
+        <script src="bower_components/ractive/ractive.min.js"></script>
+        <script src="bower_components/tinycolor/dist/tinycolor-min.js"></script>
+        <script src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="js/pickr.js"></script>
+    </body>
+</html>
