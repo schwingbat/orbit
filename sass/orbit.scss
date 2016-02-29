@@ -5,6 +5,7 @@ $trans-speed: 0.2s;
 /* Utility Classes */
 .disabled { user-select: none; }
 .no-transition { transition: none !important; }
+.not-rendered { display: none; }
 
 .label {
     user-select: none;
@@ -12,7 +13,7 @@ $trans-speed: 0.2s;
 }
 
 body {
-    font-family: 'Input', sans-serif;
+    font-family: "Helvetica Neue", "Helvetica", 'Input', sans-serif;
     font-size: 13px;
 }
 
@@ -22,9 +23,16 @@ body {
     color: #fff;
     border-color: #fff;
 
+    transition: background-color 200ms;
+
     &.dark {
         color:#222;
         border-color: #222;
+
+        .result {
+            color: #222;
+            border-color: #222;
+        }
 
         .slider,
         .handle,
@@ -154,6 +162,7 @@ $wheel: 310px;
             color: inherit;
             margin-bottom: 4px;
             text-align: center;
+            font-weight: 200;
         }
 
         .slider {
@@ -191,6 +200,10 @@ $wheel: 310px;
         width: 200px;
     }
 
+    .invalid {
+        background: transparentize(red, 0.5);
+    }
+
     li {
         border: 1px solid;
         border-radius: 9999px;
@@ -200,15 +213,32 @@ $wheel: 310px;
         text-align: right;
         margin-bottom: 12px;
 
+        position: relative;
+
         color: inherit;
         border-color: inherit;
 
         &:last-child { margin-bottom: 0; }
+
+        .result {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 1em;
+            text-align: right;
+            font-family: "Helvetica Neue", "Helvetica", "Segoe UI", sans-serif;
+            font-weight: 200;
+            width: 70%;
+            padding: 0;
+            margin: 0;
+
+            color: #fff;
+        }
     }
 
     .label {
         float: left;
-        font-weight: bold;
+        font-weight: 200;
         -webkit-user-select: none;
     }
 }
