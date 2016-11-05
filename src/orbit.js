@@ -1,6 +1,6 @@
 'use strict'
 
-var tinycolor = require('./tinycolor-min.js')
+var tinycolor = require('./lib/tinycolor-min.js')
 var Ractive = require('ractive')
 var hammer = require('hammerjs')
 var touch = require('ractive-touch')

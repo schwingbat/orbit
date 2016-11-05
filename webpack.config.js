@@ -1,11 +1,10 @@
 var path = require("path");
 
 module.exports = {
-  entry: {
-    app: ["./js/orbit.js"]
-  },
+  context: path.join(__dirname, 'src'),
+  entry: './orbit.js',
   output: {
-    path: './',
+    path: path.join(__dirname, 'build'),
     filename: "bundle.js"
   }
 };
