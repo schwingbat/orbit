@@ -4,6 +4,7 @@ var tinycolor = require('./lib/tinycolor-min.js')
 var Ractive = require('ractive')
 var hammer = require('hammerjs')
 var touch = require('ractive-touch')
+const isValid = require('./utils/validate-colors');
 
 Ractive.DEBUG = false
 
@@ -50,54 +51,6 @@ var orbit = new Ractive({
     oninit: function() {
         var self = this
 
-        function validateHex(value) {
-            var newVal = value.split('')
-
-            if (newVal[0] === '#') newVal.shift()
-            if (newVal.length !== 6 && newVal.length !== 3) return false
-
-            var charList = '0123456789ABCDEF'
-            var valid = true
-
-            newVal.forEach(function(val) {
-                var match = false
-                charList.split('').forEach(function(char) {
-                    if (char === val.toUpperCase()) match = true
-                })
-                if (!match) valid = false
-            })
-
-            if (!valid) return false
-            else return true
-        }
-
-        function validateRGB(value) {
-            var split = value.split(',')
-
-            if (split.length !== 3) return false
-
-            var inRange = true
-
-            split.forEach(item => {
-                var parsed = parseInt(item)
-                if (parsed > 255 || parsed < 0) inRange = false
-            })
-
-            if (inRange) return true
-        }
-
-        function validateHSL(value) {
-            var split = value.replace('%', '').split(',')
-
-            if (split.length !== 3) return false
-
-            if (split[0] > 360 || split[0] < 0) return false
-            if (split[1] > 100 || split[1] < 0) return false
-            if (split[2] > 100 || split[2] < 0) return false
-
-            return true
-        }
-
         function RGBTempToObject(value) {
             var newVal = value.split(',').map(function(item) {
                 return item.trim()
@@ -126,7 +79,7 @@ var orbit = new Ractive({
             'changeHex': function(e) {
                 var value = self.get('color.hex.temp')
 
-                if (validateHex(value)) {
+                if (isValid.hex(value)) {
                     setColor(value, ['hsl','rgb'])
 
                     self.set('color.hex.isValid', true)
@@ -137,7 +90,7 @@ var orbit = new Ractive({
             'changeRGB': function(e) {
                 var value = self.get('color.rgb.temp')
 
-                if (validateRGB(value)) {
+                if (isValid.rgb(value)) {
                     setColor(RGBTempToObject(value), ['hsl','hex'])
 
                     self.set('color.rgb.isValid', true)
@@ -148,7 +101,7 @@ var orbit = new Ractive({
             'changeHSL': function(e) {
                 var value = self.get('color.hsl.temp')
 
-                if (validateHSL(value)) {
+                if (isValid.hsl(value)) {
                     setColor(HSLTempToObject(value), ['rgb','hex'])
 
                     self.set('color.hsl.isValid', true)
