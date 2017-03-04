@@ -12,7 +12,7 @@
   },
   "scripts": {
     "pack": "webpack ./js/orbit.js ./bundle.js",
-    "serve": "webpack-dev-server"
+    "serve": "webpack-dev-server --content-base build/"
   },
   "author": "Tony McCoy <toonytony@gmail.com>",
   "license": "MIT",

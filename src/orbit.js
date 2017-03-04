@@ -2,8 +2,8 @@
 
 var tinycolor = require('./lib/tinycolor-min.js')
 var Ractive = require('ractive')
-var hammer = require('hammerjs')
-var touch = require('ractive-touch')
+//var hammer = require('hammerjs')
+//var touch = require('ractive-touch')
 
 Ractive.DEBUG = false
 
@@ -347,4 +347,15 @@ if (localStorage.getItem('OrbitCurrentColor')) {
     setColor(JSON.parse(localStorage.getItem('OrbitCurrentColor')), ['hsl','hex','rgb'])
 } else {
     setColor()
+}
+
+window.addEventListener('hashchange', function(e) {
+    console.log(e);
+    var newHash = e.newURL.split('#').pop();
+    setColor('#' + newHash, ['hsl', 'rgb', 'hex']);
+});
+
+// Get color on load
+if (window.location.hash.indexOf('#') !== -1) {
+    setColor('#' + window.location.hash.split('#').pop());
 }
