@@ -1,6 +1,8 @@
 (function() {
     "use strict";
 
+    var loadedTime = Date.now();
+
     const validate = require("./lib/validate-color");
     const color = require("./lib/convert-color");
     const Component = require("@schwingbat/component");
@@ -22,7 +24,7 @@
                     "id": "hue-wheel",
                     "class": "wheel-track",
                     "style": {
-                        "transform": "rotate(" + this.state.hue + "deg)"
+                        "transform": "rotate(" + this.state.hue * 360 + "deg)"
                     }}, [
                     el("div", { "id": "hue-knob", "class": "knob" })
                 ]),
@@ -35,7 +37,7 @@
                                     "id": "saturation-knob",
                                     "class": "knob slider-knob",
                                     "style": {
-                                        "margin-left": this.state.saturation + "%"
+                                        "margin-left": this.state.saturation * 100 + "%"
                                     }
                                 })
                             ])
@@ -47,7 +49,7 @@
                                     "id": "lightness-knob",
                                     "class": "knob slider-knob",
                                     "style" : {
-                                        "margin-left": this.state.lightness + "%"
+                                        "margin-left": this.state.lightness * 100 + "%"
                                     },
                                 })
                             ])
@@ -67,6 +69,10 @@
             const state = self.state;
 
             function handleMouseUpOutsideElements(e) {
+                if (state.changingHue || state.changingSat || state.changingLight) {
+                    Orbit.saveColor();
+                }
+
                 self.update({
                     changingHue: false,
                     changingSat: false,
@@ -80,8 +86,6 @@
             function handleMouseMove(e) {
                 if (state.changingHue) {
                     // Handle wheel movement logic.
-
-                    console.log(state);
 
                     // First get the center of the wheel.
                     var rect = self.nodes.hueGuide.getBoundingClientRect();
@@ -263,7 +267,8 @@
                             console.log(el.value);
 
                             var hsl = color.rgbToHSL(color.hexToRGB(el.value));
-                            Orbit.update({ color: hsl, isValid: validate.hsl(hsl) });
+                            Orbit.update({ color: hsl, isValid: validate.hsl(hsl), ignoreHashChange: true });
+                            window.location.hash = el.value;
                         } else {
                             Orbit.update({ isValid: false });
                         }
@@ -274,16 +279,23 @@
                             .split(",")
                             .map(c => parseInt(c));
 
-                        Orbit.update({ color: hsl });
+                        hsl = { h: hsl[0] / 360, s: hsl[1] / 100, l: hsl[2] / 100 };
+
+                        console.log(hsl);
+
+                        Orbit.update({ color: hsl, ignoreHashChange: true });
+                        window.location.hash = color.rgbToHex(color.hslToRGB(hsl));
                         break;
                     case "rgb-value":
                         var rgb = el.value
                             .split(",")
                             .map(c => parseInt(c));
 
-                        var hsl = color.rgbToHSL({ r: rgb[0], g: rgb[1], b: rgb[2] });
+                        rgb = { r: rgb[0] / 256, g: rgb[1] / 256, b: rgb[2] / 256 }
+                        var hsl = color.rgbToHSL(rgb);
 
-                        Orbit.update({ color: hsl });
+                        Orbit.update({ color: hsl, ignoreHashChange: true });
+                        window.location.hash = color.rgbToHex(rgb);
                         break;
                     }
                 }
@@ -291,7 +303,6 @@
         },
         updaters: {
             hex: function(val) {
-                console.log(val);
                 this.nodes.hexValue.value = color.formatHex(val, true).toUpperCase();
             },
             rgb: function(val) {
@@ -309,13 +320,10 @@
             isLight: true,
             isValid: true,
             color: {
-                h: 360,
+                h: 1,
                 s: 0,
-                l: 100,
+                l: 1,
             },
-        },
-        prerender() {
-            // TODO: Load color from localStorage if saved.
         },
         render(el) {
             return el("div", { "class": "controls-container" }, [ Wheel.el, Formats.el ]);
@@ -324,14 +332,27 @@
             const self = this;
 
             window.addEventListener("hashchange", function(e) {
-                var newHash = "#" + e.newURL.split("#").pop();
-                self.update({ color: color.rgbToHSL(color.hexToRGB(newHash)) });
+                if (self.state.ignoreHashChange) {
+                    self.update({ ignoreHashChange: false });
+                } else {
+                    var newHash = "#" + window.location.hash.split("#").pop();
+                    self.update({ color: color.rgbToHSL(color.hexToRGB(newHash)) });
+                }
             });
 
-            // Get color on load
+            // Get color from URL on load.
             if (window.location.hash.indexOf('#') !== -1) {
-                self.update({ color: color.rgbToHSL(color.hexToRGB('#' + window.location.hash.split('#').pop())) });
+                self.update({ color: color.rgbToHSL(color.hexToRGB('#' + window.location.hash.split("#").pop())) });
+            } else {
+                // Load saved color.
+                const saved = localStorage.getItem("OrbitSavedColor");
+
+                if (saved) {
+                    self.update({ color: JSON.parse(saved) });
+                }
             }
+
+            console.log(`Orbit initialized and rendered in ${ Date.now() - loadedTime }ms.`);
         },
         updaters: {
             isLight: function(val) {
@@ -344,8 +365,6 @@
                 if (validate.hsl(hsl)) {
                     var rgb = color.hslToRGB(hsl);
                     var hex = color.rgbToHex(rgb);
-
-                    console.log({ hsl, rgb, hex });
 
                     // Convert and update color formats.
                     Formats.update({
@@ -375,5 +394,10 @@
                 }
             },
         },
+        saveColor() {
+            localStorage.setItem("OrbitSavedColor", JSON.stringify(this.state.color));
+            this.update({ ignoreHashChange: true });
+            window.location.hash = color.rgbToHex(color.hslToRGB(this.state.color)).toUpperCase();
+        }
     });
 })();
