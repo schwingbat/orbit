@@ -5,7 +5,7 @@ exports.formatHex = function formatHex(hex, hashSymbol = false) {
         hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
 
-    return hashSymbol ? "#" + hex : hex;
+    return (hashSymbol ? "#" + hex : hex).toUpperCase();
 }
 
 exports.formatRGB = function formatRGB(rgb, resolution = 0) {
@@ -128,5 +128,5 @@ exports.rgbToHex = function rgbToHex(color) {
     var g = pad2(decToHexString(color.g * 255));
     var b = pad2(decToHexString(color.b * 255));
 
-    return "#" + r + g + b;
+    return ("#" + r + g + b).toUpperCase();
 }
