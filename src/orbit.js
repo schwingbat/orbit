@@ -158,7 +158,6 @@
         events: {
             "[mousedown, touchstart] #hue-knob": function(e, el) {
                 this.update({ changingHue: true });
-                console.log("Starting touch/mousedown on hue knob.");
             },
             "[mousedown, touchstart] .slider-knob": function(e, el) {
                 switch (el.id) {
@@ -264,8 +263,6 @@
                     switch (el.id) {
                     case "hex-value":
                         if (validate.hex(el.value)) {
-                            console.log(el.value);
-
                             var hsl = color.rgbToHSL(color.hexToRGB(el.value));
                             Orbit.update({ color: hsl, isValid: validate.hsl(hsl), ignoreHashChange: true });
                             window.location.hash = el.value;
@@ -280,8 +277,6 @@
                             .map(c => parseInt(c));
 
                         hsl = { h: hsl[0] / 360, s: hsl[1] / 100, l: hsl[2] / 100 };
-
-                        console.log(hsl);
 
                         Orbit.update({ color: hsl, ignoreHashChange: true });
                         window.location.hash = color.rgbToHex(color.hslToRGB(hsl));
