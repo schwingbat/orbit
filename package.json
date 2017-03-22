@@ -5,10 +5,7 @@
   "main": "index.html",
   "private": true,
   "dependencies": {
-    "hammerjs": "^2.0.6",
-    "ractive": "^0.7.3",
-    "ractive-touch": "^0.4.0",
-    "tinycolor": "0.0.1"
+    "@schwingbat/component": "0.0.1"
   },
   "scripts": {
     "pack": "webpack ./js/orbit.js ./bundle.js",
