@@ -16,7 +16,7 @@
         },
         render(el) {
             return el("div", { id: "wheel" }, [
-                el("img", { "src": "img/colors.png", "class": "colors" }),
+                el("img", { "src": "img/colors.png", "id": "color-wheel", "class": "colors" }),
                 el("div", { "id": "hue-guide", "class": "hue-guide" }),
                 el("div", {
                     "id": "hue-wheel",
@@ -182,9 +182,12 @@
                 if (val) {
                     knob.classList.add("active");
                     knob.style.background = `hsl(${ hue }, 100%, 50%)`;
+                    this.nodes.colorWheel.classList.add("active");
+
                 } else {
                     knob.classList.remove("active");
                     knob.style.background = null;
+                    this.nodes.colorWheel.classList.remove("active");
                 }
             },
             changingSat: function(val) {
@@ -298,7 +301,7 @@
     });
 
     const Orbit = new Component({
-        anchor: "#app",
+        anchor: document.querySelector("#app"),
         state: {
             isLight: true,
             isValid: true,
@@ -313,6 +316,19 @@
         },
         render(el) {
             return el("div", { "class": "controls-container" }, [ Wheel.el, Formats.el ]);
+        },
+        postrender() {
+            const self = this;
+
+            window.addEventListener("hashchange", function(e) {
+                var newHash = "#" + e.newURL.split("#").pop();
+                self.update({ color: color.rgbToHSL(color.hexToRGB(newHash)) });
+            });
+
+            // Get color on load
+            if (window.location.hash.indexOf('#') !== -1) {
+                self.update({ color: color.rgbToHSL(color.hexToRGB('#' + window.location.hash.split('#').pop())) });
+            }
         },
         updaters: {
             isLight: function(val) {

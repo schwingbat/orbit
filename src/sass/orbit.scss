@@ -1,5 +1,10 @@
 $trans-speed: 0.2s;
 
+$font-stack: -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Roboto", "Oxygen", 
+    "Ubuntu", "Cantarell", "Fira Sans", 
+    "Droid Sans", "Helvetica Neue", sans-serif;
+
 *,
 *:before,
 *:after {
@@ -20,7 +25,7 @@ $trans-speed: 0.2s;
 }
 
 body {
-    font-family: "Helvetica Neue", "Helvetica", 'Input', sans-serif;
+    font-family: $font-stack;
     font-size: 14px;
 }
 
@@ -110,12 +115,12 @@ $wheel: 310px;
 
     .hue-guide {
         @include circle(280px);
-        border: 2px solid;
+        border: 1px solid;
         border-color: inherit;
         // transition: $trans-speed;
         position: absolute;
-        top: 14px;
-        left: 14px;
+        top: 15px;
+        left: 15px;
     }
 
     .wheel-track {
@@ -134,7 +139,7 @@ $wheel: 310px;
     .colors {
         width: $wheel;
         height: $wheel;
-        // transition: 0.4s;
+        transition: 0.4s;
         transform: scale(0.5);
         opacity: 0;
         pointer-events: none;
@@ -179,6 +184,7 @@ $wheel: 310px;
             color: inherit;
             margin-bottom: 4px;
             text-align: center;
+            font-weight: bold;
         }
 
         .slider-track {
@@ -238,7 +244,7 @@ $wheel: 310px;
             background: transparent;
             font-size: 1em;
             text-align: right;
-            font-family: "Helvetica Neue", "Helvetica", "Segoe UI", sans-serif;
+            font-family: $font-stack;
             width: 70%;
             padding: 0;
             margin: 0;
@@ -251,5 +257,6 @@ $wheel: 310px;
 
     .label {
         float: left;
+        font-weight: bold;
     }
 }
