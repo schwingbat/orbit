@@ -1,6 +1,13 @@
 $trans-speed: 0.2s;
 
-*, *:before, *:after { box-sizing: border-box; }
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
 
 /* Utility Classes */
 .disabled { user-select: none; }
@@ -14,32 +21,35 @@ $trans-speed: 0.2s;
 
 body {
     font-family: "Helvetica Neue", "Helvetica", 'Input', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
 }
 
-#orbit {
+#app {
     position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
-    color: #fff;
-    border-color: #fff;
-
-    //transition: background-color 200ms;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
 
     &.dark {
-        color:#222;
-        border-color: #222;
+        color:#fff;
+        border-color: #fff;
 
         .result {
-            color: #222;
-            border-color: #222;
+            color: #fff;
+            border-color: #fff;
         }
 
-        .slider,
-        .handle,
+        .slider-track,
+        .knob,
         .scheme-chooser li.active {
-            background: #222;
+            background: #fff;
         }
-        .handle.active { border-color: #222; }
+        .handle.active { border-color: #fff; }
+
+        .knob.active {
+            border-color: #fff;
+        }
     }
 }
 
@@ -100,12 +110,12 @@ $wheel: 310px;
 
     .hue-guide {
         @include circle(280px);
-        border: 1px solid;
+        border: 2px solid;
         border-color: inherit;
-        transition: $trans-speed;
+        // transition: $trans-speed;
         position: absolute;
-        top: 15px;
-        left: 15px;
+        top: 14px;
+        left: 14px;
     }
 
     .wheel-track {
@@ -115,23 +125,16 @@ $wheel: 310px;
         height: $wheel;
         //transition: transform $trans-speed;
 
-        .wheel-knob {
+        .knob {
             margin: 0 auto;
             top: 0;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            background-color: #000;
-            cursor: grab;
-            &.active { border-color: #fff; }
         }
     }
 
     .colors {
         width: $wheel;
         height: $wheel;
-        transition: 0.4s;
+        // transition: 0.4s;
         transform: scale(0.5);
         opacity: 0;
         pointer-events: none;
@@ -139,6 +142,20 @@ $wheel: 310px;
             opacity: 1;
             transform: scale(1.5);
         }
+    }
+}
+
+.knob {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background-color: #000;
+    cursor: grab;
+    pointer-events: all;
+
+    &.active {
+        border-color: #000;
     }
 }
 
@@ -162,7 +179,6 @@ $wheel: 310px;
             color: inherit;
             margin-bottom: 4px;
             text-align: center;
-            font-weight: 200;
         }
 
         .slider-track {
@@ -172,14 +188,10 @@ $wheel: 310px;
             display: block;
             margin: 18px 0;
 
-            .slider-knob {
+            .knob {
                 display: inline-block;
                 margin-top: -15px;
-                width: 30px;
-                height: 30px;
-                background: inherit;
-                border-radius: 50%;
-                cursor: grab;
+                transform: translateX(-50%);
             }
         }
     }
@@ -209,7 +221,7 @@ $wheel: 310px;
         border-radius: 9999px;
         padding: 12px 20px;
         width: 100%;
-        transition: $trans-speed;
+        // transition: $trans-speed;
         text-align: right;
         margin-bottom: 12px;
 
@@ -227,10 +239,11 @@ $wheel: 310px;
             font-size: 1em;
             text-align: right;
             font-family: "Helvetica Neue", "Helvetica", "Segoe UI", sans-serif;
-            font-weight: 200;
             width: 70%;
             padding: 0;
             margin: 0;
+
+            pointer-events: all;
 
             color: #000;
         }
@@ -238,7 +251,5 @@ $wheel: 310px;
 
     .label {
         float: left;
-        font-weight: 200;
-        -webkit-user-select: none;
     }
 }

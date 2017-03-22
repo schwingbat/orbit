@@ -18,7 +18,13 @@ exports.hex = function validateHex(value) {
     return !!valid;
 }
 
-exports.rgb = function validateRGB(value) {
+exports.rgb = function validateRGB(rgb) {
+    return rgb.r <= 255 && rgb.r >= 0
+        && rgb.g <= 255 && rgb.g >= 0
+        && rgb.b <= 255 && rgb.b >= 0;
+}
+
+exports.rgbString = function validateRGBString(value) {
     var split = value.split(",");
 
     if (split.length !== 3) return false;
@@ -33,7 +39,13 @@ exports.rgb = function validateRGB(value) {
     return inRange;
 }
 
-exports.hsl = function validateHSL(value) {
+exports.hsl = function validateHSL(hsl) {
+    return hsl.h <= 360 && hsl.h >= 0
+        && hsl.s <= 100 && hsl.s >= 0
+        && hsl.l <= 100 && hsl.l >= 0;
+}
+
+exports.hslString = function validateHSLString(value) {
     var split = value.replace("%", "").split(",");
 
     if (split.length !== 3) return false;
