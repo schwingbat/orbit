@@ -381,7 +381,7 @@
                     });
 
                     this.update({
-                        isLight: color.isLightHex(hex),
+                        isLight: hsl.l > 0.5,
                         isValid: true,
                     });
 
