@@ -36,7 +36,7 @@ exports.rgbToHSL = function rgbToHSL(color) {
         var d = max - min;
         s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 
-        switch (max){
+        switch (max) {
             case r: h = (g - b) / d + (g < b ? 6 : 0); break;
             case g: h = (b - r) / d + 2; break;
             case b: h = (r - g) / d + 4; break;
@@ -95,7 +95,11 @@ function decToHexString(number) {
         number = 0xFFFFFFFF + number + 1;
     }
 
-    return number.toString(16);
+    return Math.round(number).toString(16);
+}
+
+function pad2(c) {
+    return c.length == 1 ? '0' + c : '' + c;
 }
 
 exports.hexToRGB = function hexToRGB(hex) {
@@ -109,9 +113,9 @@ exports.hexToRGB = function hexToRGB(hex) {
 }
 
 exports.rgbToHex = function rgbToHex(color) {
-    r = decToHexString(color.r);
-    g = decToHexString(color.g);
-    b = decToHexString(color.b);
+    r = pad2(decToHexString(color.r));
+    g = pad2(decToHexString(color.g));
+    b = pad2(decToHexString(color.b));
 
     return "#" + r + g + b;
 }
