@@ -46,7 +46,7 @@ exports.rgbToHSL = function rgbToHSL(color) {
     }
 
     return {
-        h: h * 100 + 0.5 | 0,
+        h: h * 360 + 0.5 | 0,
         s: s * 100 + 0.5 | 0,
         l: l * 100 + 0.5 | 0
     }
@@ -113,9 +113,9 @@ exports.hexToRGB = function hexToRGB(hex) {
 }
 
 exports.rgbToHex = function rgbToHex(color) {
-    r = pad2(decToHexString(color.r));
-    g = pad2(decToHexString(color.g));
-    b = pad2(decToHexString(color.b));
+    var r = pad2(decToHexString(color.r));
+    var g = pad2(decToHexString(color.g));
+    var b = pad2(decToHexString(color.b));
 
     return "#" + r + g + b;
 }
