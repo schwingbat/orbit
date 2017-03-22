@@ -13,34 +13,23 @@ exports.formatRGB = function formatRGB(rgb, resolution = 0) {
 
     var str = "";
 
-    str += (rgb.r * 256).toFixed(resolution || 0);
-    str += ", ";
-    str += (rgb.g * 256).toFixed(resolution || 0);
-    str += ", ";
-    str += (rgb.b * 256).toFixed(resolution || 0);
+    str += (rgb.r * 255).toFixed(resolution || 0) + ", ";
+    str += (rgb.g * 255).toFixed(resolution || 0) + ", ";
+    str += (rgb.b * 255).toFixed(resolution || 0);
 
     return str;
 }
 
-exports.formatHSL = function formatHSL(hsl, resolution = 0, degreesSymbol = false, percentSymbol = true) {
+exports.formatHSL = function formatHSL(hsl, resolution = 0) {
     // Format a float-format HSL object as a displayable string.
 
     var str = "";
 
-    str += (hsl.h * 360).toFixed(resolution || 0);
-    if (degreesSymbol) str += "°";
-    str += ", ";
-    str += (hsl.s * 100).toFixed(resolution || 0);
-    if (percentSymbol) str += "%";
-    str += ", ";
-    str += (hsl.l * 100).toFixed(resolution || 0);
-    if (percentSymbol) str += "%";
+    str += (hsl.h * 360).toFixed(resolution || 0) + ", ";
+    str += (hsl.s * 100).toFixed(resolution || 0) + "%, ";
+    str += (hsl.l * 100).toFixed(resolution || 0) + "%";
 
     return str;
-}
-
-exports.isLightHex = function isLightHex(hex) {
-    return parseInt(exports.formatHex(hex), 16) > parseInt("757575", 16);
 }
 
 /*
@@ -114,7 +103,10 @@ function decToHexString(number) {
         number = 0xFFFFFFFF + number + 1;
     }
 
-    return Math.round(number).toString(16);
+    number = Math.round(number).toString(16);
+    return number === "100"
+        ? "FF"
+        : number;
 }
 
 function pad2(c) {
@@ -125,20 +117,16 @@ exports.hexToRGB = function hexToRGB(hex) {
     hex = exports.formatHex(hex);
 
     return {
-        r: parseInt(hex.slice(0, 2), 16) / 256,
-        g: parseInt(hex.slice(2, 4), 16) / 256,
-        b: parseInt(hex.slice(4, 6), 16) / 256
+        r: parseInt(hex.slice(0, 2), 16) / 255,
+        g: parseInt(hex.slice(2, 4), 16) / 255,
+        b: parseInt(hex.slice(4, 6), 16) / 255
     }
 }
 
 exports.rgbToHex = function rgbToHex(color) {
-    var r = pad2(decToHexString(color.r * 256));
-    var g = pad2(decToHexString(color.g * 256));
-    var b = pad2(decToHexString(color.b * 256));
-
-    if (r === "100") r = "FF";
-    if (g === "100") g = "FF";
-    if (b === "100") b = "FF";
+    var r = pad2(decToHexString(color.r * 255));
+    var g = pad2(decToHexString(color.g * 255));
+    var b = pad2(decToHexString(color.b * 255));
 
     return "#" + r + g + b;
 }
