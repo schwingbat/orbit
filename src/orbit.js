@@ -234,8 +234,8 @@
         render(el) {
             var s = this.state;
             var hex = s.hex;
-            var rgb = (s.rgb.r * 256).toFixed(1) + ", " + (s.rgb.g * 256).toFixed(1) + ", " + (s.rgb.b * 256).toFixed(1);
-            var hsl = (s.hsl.h * 360).toFixed(1) + ", " + (s.hsl.s * 100).toFixed(1) + "%, " + (s.hsl.l * 100).toFixed(1) + "%";
+            var rgb = color.formatRGB(s.rgb);
+            var hsl = color.formatHSL(s.hsl);
 
             return el("ul", { "class": "formats" }, [
                 el("li", { "class": "hsl" }, [
@@ -259,8 +259,8 @@
                     case "hex-value":
                         if (validate.hex(el.value)) {
                             var hsl = color.rgbToHSL(color.hexToRGB(el.value));
-                            Orbit.update({ color: hsl, ignoreHashChange: true });
-                            window.location.hash = el.value;
+                            Orbit.update({ color: hsl });
+                            Orbit.setHash(el.value);
                         } else {
                             this.update({ validHex: false });
                         }
@@ -274,8 +274,8 @@
                         hsl = { h: hsl[0] / 360, s: hsl[1] / 100, l: hsl[2] / 100 };
 
                         if (validate.hsl(hsl)) {
-                            Orbit.update({ color: hsl, ignoreHashChange: true });
-                            window.location.hash = color.rgbToHex(color.hslToRGB(hsl));
+                            Orbit.update({ color: hsl });
+                            Orbit.setHash(hsl);
                         } else {
                             this.update({ validHSL: false });
                         }
@@ -289,8 +289,8 @@
                         var hsl = color.rgbToHSL(rgb);
 
                         if (validate.rgb(rgb)) {
-                            Orbit.update({ color: hsl, ignoreHashChange: true });
-                            window.location.hash = color.rgbToHex(rgb);
+                            Orbit.update({ color: hsl });
+                            orbit.setHash(rgb);
                         } else {
                             this.update({ validRGB: false });
                         }
@@ -301,7 +301,7 @@
         },
         updaters: {
             hex: function(val) {
-                this.nodes.hexValue.value = color.formatHex(val, true).toUpperCase();
+                this.nodes.hexValue.value = color.formatHex(val, true);
                 this.update({ validHex: true });
             },
             rgb: function(val) {
@@ -313,7 +313,6 @@
                 this.update({ validHSL: true });
             },
             validHex: function(val) {
-                console.log("HEX IS ", val);
                 this.nodes.hexValue.parentNode.classList[ val ? "remove" : "add" ]("invalid");
             },
             validRGB: function(val) {
@@ -329,11 +328,7 @@
         anchor: document.querySelector("#app"),
         state: {
             isLight: true,
-            color: {
-                h: 1,
-                s: 0,
-                l: 1,
-            },
+            color: { h: 1, s: 0, l: 1 },
         },
         render(el) {
             return el("div", { "class": "controls-container" }, [ Wheel.el, Formats.el ]);
@@ -388,17 +383,25 @@
                     // Update background color.
                     this.anchor.style.backgroundColor = hex;
                 }
-                // else {
-                //     this.update({
-                //         isValid: false,
-                //     });
-                // }
             },
         },
         saveColor() {
             localStorage.setItem("OrbitSavedColor", JSON.stringify(this.state.color));
+            this.setHash(this.state.color);
+        },
+        setHash(val) {
+            // Convert any color to hex and update the hash without triggering the event handler.
             this.update({ ignoreHashChange: true });
-            window.location.hash = color.rgbToHex(color.hslToRGB(this.state.color)).toUpperCase();
+
+            if (validate.hex(val)) {
+                window.location.hash = color.formatHex(val);
+            } else if (validate.rgb(val)) {
+                window.location.hash = color.rgbToHex(val);
+            } else if (validate.hsl(val)) {
+                window.location.hash = color.rgbToHex(color.hslToRGB(val));
+            } else {
+                this.update({ ignoreHashChange: false });
+            }
         }
     });
 })();
