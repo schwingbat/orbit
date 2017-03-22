@@ -1,15 +1,46 @@
-function formatHex(hex) {
+exports.formatHex = function formatHex(hex, hashSymbol = false) {
     if (hex[0] === "#") hex = hex.slice(1);
     if (hex.length === 3) {
         // Expand hex shorthand.
         hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
-    return hex;
+
+    return hashSymbol ? "#" + hex : hex;
 }
 
-exports.isLightHex = function(hex) {
-    // 7829367 is the decimal equivalent of #777777, middle grey.
-    return parseInt(formatHex(hex), 16) > 7829367;
+exports.formatRGB = function formatRGB(rgb, resolution = 0) {
+    // Format a float-format RGB object as a displayable string.
+
+    var str = "";
+
+    str += (rgb.r * 256).toFixed(resolution || 0);
+    str += ", ";
+    str += (rgb.g * 256).toFixed(resolution || 0);
+    str += ", ";
+    str += (rgb.b * 256).toFixed(resolution || 0);
+
+    return str;
+}
+
+exports.formatHSL = function formatHSL(hsl, resolution = 0, degreesSymbol = false, percentSymbol = true) {
+    // Format a float-format HSL object as a displayable string.
+
+    var str = "";
+
+    str += (hsl.h * 360).toFixed(resolution || 0);
+    if (degreesSymbol) str += "°";
+    str += ", ";
+    str += (hsl.s * 100).toFixed(resolution || 0);
+    if (percentSymbol) str += "%";
+    str += ", ";
+    str += (hsl.l * 100).toFixed(resolution || 0);
+    if (percentSymbol) str += "%";
+
+    return str;
+}
+
+exports.isLightHex = function isLightHex(hex) {
+    return parseInt(exports.formatHex(hex), 16) > parseInt("757575", 16);
 }
 
 /*
@@ -19,9 +50,7 @@ exports.isLightHex = function(hex) {
 */
 
 exports.rgbToHSL = function rgbToHSL(color) {
-    var r = color.r / 255;
-    var g = color.g / 255;
-    var b = color.b / 255;
+    var { r, g, b } = color;
 
     var max = Math.max(r, g, b);
     var min = Math.min(r, g, b);
@@ -45,17 +74,13 @@ exports.rgbToHSL = function rgbToHSL(color) {
         h /= 6;
     }
 
-    return {
-        h: h * 360 + 0.5 | 0,
-        s: s * 100 + 0.5 | 0,
-        l: l * 100 + 0.5 | 0
-    }
+    console.log(h, s, l)
+
+    return { h, s, l }
 }
 
 exports.hslToRGB = function hslToRGB(color) {
-    var h = color.h / 360;
-    var s = color.s / 100;
-    var l = color.l / 100;
+    var { h, s, l } = color;
 
     var r;
     var g;
@@ -80,11 +105,7 @@ exports.hslToRGB = function hslToRGB(color) {
         b = hue2rgb(p, q, h - 1/3);
     }
 
-    return {
-        r: Math.round(r * 255),
-        g: Math.round(g * 255),
-        b: Math.round(b * 255)
-    };
+    return { r, g, b };
 }
 
 // With a way to transform between HSL and RGB, I just need a way
@@ -95,6 +116,8 @@ function decToHexString(number) {
         number = 0xFFFFFFFF + number + 1;
     }
 
+    console.log(number);
+
     return Math.round(number).toString(16);
 }
 
@@ -103,19 +126,29 @@ function pad2(c) {
 }
 
 exports.hexToRGB = function hexToRGB(hex) {
-    hex = formatHex(hex);
+    hex = exports.formatHex(hex);
+
+    console.log(hex);
 
     return {
-        r: parseInt(hex.slice(0, 2), 16),
-        g: parseInt(hex.slice(2, 4), 16),
-        b: parseInt(hex.slice(4, 6), 16)
+        r: parseInt(hex.slice(0, 2), 16) / 256,
+        g: parseInt(hex.slice(2, 4), 16) / 256,
+        b: parseInt(hex.slice(4, 6), 16) / 256
     }
 }
 
 exports.rgbToHex = function rgbToHex(color) {
-    var r = pad2(decToHexString(color.r));
-    var g = pad2(decToHexString(color.g));
-    var b = pad2(decToHexString(color.b));
+    console.log(color);
+
+    var r = pad2(decToHexString(color.r * 256));
+    var g = pad2(decToHexString(color.g * 256));
+    var b = pad2(decToHexString(color.b * 256));
+
+    if (r === "100") r = "FF";
+    if (g === "100") g = "FF";
+    if (b === "100") b = "FF";
+
+    console.log(r, g, b);
 
     return "#" + r + g + b;
 }
