@@ -354,6 +354,8 @@
 
                 if (saved) {
                     self.update({ color: JSON.parse(saved) });
+                } else {
+                    self.update({ color: color.rgbToHSL({ h: 0.775, s: 0.6, l: 0.84 }) });
                 }
             }
 
