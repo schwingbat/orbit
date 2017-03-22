@@ -74,8 +74,6 @@ exports.rgbToHSL = function rgbToHSL(color) {
         h /= 6;
     }
 
-    console.log(h, s, l)
-
     return { h, s, l }
 }
 
@@ -116,8 +114,6 @@ function decToHexString(number) {
         number = 0xFFFFFFFF + number + 1;
     }
 
-    console.log(number);
-
     return Math.round(number).toString(16);
 }
 
@@ -128,8 +124,6 @@ function pad2(c) {
 exports.hexToRGB = function hexToRGB(hex) {
     hex = exports.formatHex(hex);
 
-    console.log(hex);
-
     return {
         r: parseInt(hex.slice(0, 2), 16) / 256,
         g: parseInt(hex.slice(2, 4), 16) / 256,
@@ -138,8 +132,6 @@ exports.hexToRGB = function hexToRGB(hex) {
 }
 
 exports.rgbToHex = function rgbToHex(color) {
-    console.log(color);
-
     var r = pad2(decToHexString(color.r * 256));
     var g = pad2(decToHexString(color.g * 256));
     var b = pad2(decToHexString(color.b * 256));
@@ -147,8 +139,6 @@ exports.rgbToHex = function rgbToHex(color) {
     if (r === "100") r = "FF";
     if (g === "100") g = "FF";
     if (b === "100") b = "FF";
-
-    console.log(r, g, b);
 
     return "#" + r + g + b;
 }
