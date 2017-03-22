@@ -7,9 +7,9 @@
 
     const Wheel = new Component({
         state: {
-            hue: 360,
-            saturation: 50,
-            lightness: 70,
+            hue: 1,
+            saturation: 0.5,
+            lightness: 0.7,
             changingHue: false,
             changingSat: false,
             changingLight: false,
@@ -81,6 +81,8 @@
                 if (state.changingHue) {
                     // Handle wheel movement logic.
 
+                    console.log(state);
+
                     // First get the center of the wheel.
                     var rect = self.nodes.hueGuide.getBoundingClientRect();
                     var wheelCenter = {
@@ -99,7 +101,7 @@
 
                     Orbit.update({
                         color: {
-                            h: degs,
+                            h: degs / 360,
                             s: state.saturation,
                             l: state.lightness
                         }
@@ -113,15 +115,15 @@
 
                     // This looks crazy, but it's just the percentage the mouse is
                     // between the left and right sides of the slider track in viewport space.
-                    var amount = Math.max(0, Math.min( 100, ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width * 100 ));
+                    var amount = Math.max(0, Math.min(1, ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width));
 
-                    self.nodes.saturationKnob.style.background = `hsl(${ state.hue }, ${ amount }%, 50%)`;
-                    self.nodes.saturationKnob.style.marginLeft = `${ amount }%`;
+                    self.nodes.saturationKnob.style.background = `hsl(${ state.hue * 360 }, ${ amount * 100 }%, 50%)`;
+                    self.nodes.saturationKnob.style.marginLeft = `${ amount * 100 }%`;
 
                     Orbit.update({
                         color: {
                             h: state.hue,
-                            s: Math.round(amount),
+                            s: amount,
                             l: state.lightness
                         }
                     });
@@ -131,16 +133,16 @@
                     // This is the same as above. I guess I should split this out into another component.
 
                     var rect = self.nodes.lightnessSlider.getBoundingClientRect();
-                    var amount = Math.max(0, Math.min( 100, ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width * 100 ));
+                    var amount = Math.max(0, Math.min(1, ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width));
 
-                    self.nodes.lightnessKnob.style.background = `hsl(${ state.hue }, 0%, ${ amount }%)`;
-                    self.nodes.lightnessKnob.style.marginLeft = `${ amount }%`;
+                    self.nodes.lightnessKnob.style.background = `hsl(${ state.hue * 360 }, 0%, ${ amount * 100 }%)`;
+                    self.nodes.lightnessKnob.style.marginLeft = `${ amount * 100 }%`;
 
                     Orbit.update({
                         color: {
                             h: state.hue,
                             s: state.saturation,
-                            l: Math.round(amount)
+                            l: amount
                         }
                     });
                 }
@@ -167,13 +169,13 @@
         },
         updaters: {
             hue: function(val) {
-                this.nodes.hueWheel.style.transform = `rotate(${ val }deg)`;
+                this.nodes.hueWheel.style.transform = `rotate(${ val * 360 }deg)`;
             },
             saturation: function(val) {
-                this.nodes.saturationKnob.style.left = val + "%";
+                this.nodes.saturationKnob.style.marginLeft = (val * 100) + "%";
             },
             lightness: function(val) {
-                this.nodes.lightnessKnob.style.left = val + "%";
+                this.nodes.lightnessKnob.style.marginLeft = (val * 100) + "%";
             },
             changingHue: function(val) {
                 var knob = this.nodes.hueKnob;
@@ -181,7 +183,7 @@
 
                 if (val) {
                     knob.classList.add("active");
-                    knob.style.background = `hsl(${ hue }, 100%, 50%)`;
+                    knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, 100%, 50%)`;
                     this.nodes.colorWheel.classList.add("active");
 
                 } else {
@@ -196,7 +198,7 @@
 
                 if (val) {
                     knob.classList.add("active");
-                    knob.style.background = `hsl(${ hue }, ${ saturation }%, 50%)`;
+                    knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, ${ (saturation * 100).toFixed(1) }%, 50%)`;
                 } else {
                     knob.classList.remove("active");
                     knob.style.background = null;
@@ -208,7 +210,7 @@
 
                 if (val) {
                     knob.classList.add("active");
-                    knob.style.background = `hsl(${ hue }, 0%, ${ lightness }%)`;
+                    knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, 0%, ${ (lightness * 100).toFixed(1) }%)`;
                 } else {
                     knob.classList.remove("active");
                     knob.style.background = null;
@@ -221,21 +223,21 @@
         state: {
             hex: "#ffffff",
             rgb: {
-                r: 255,
-                g: 255,
-                b: 255,
+                r: 1,
+                g: 1,
+                b: 1,
             },
             hsl: {
-                h: 360,
+                h: 1,
                 s: 0,
-                l: 100
+                l: 1
             }
         },
         render(el) {
             var s = this.state;
             var hex = s.hex;
-            var rgb = s.rgb.r + ", " + s.rgb.g + ", " + s.rgb.b;
-            var hsl = s.hsl.h + ", " + s.hsl.s + "%, " + s.hsl.l + "%";
+            var rgb = (s.rgb.r * 256).toFixed(1) + ", " + (s.rgb.g * 256).toFixed(1) + ", " + (s.rgb.b * 256).toFixed(1);
+            var hsl = (s.hsl.h * 360).toFixed(1) + ", " + (s.hsl.s * 100).toFixed(1) + "%, " + (s.hsl.l * 100).toFixed(1) + "%";
 
             return el("ul", { "class": "formats" }, [
                 el("li", { "class": "hsl" }, [
@@ -258,8 +260,10 @@
                     switch (el.id) {
                     case "hex-value":
                         if (validate.hex(el.value)) {
+                            console.log(el.value);
+
                             var hsl = color.rgbToHSL(color.hexToRGB(el.value));
-                            Orbit.update({ color: hsl, isValid: true });
+                            Orbit.update({ color: hsl, isValid: validate.hsl(hsl) });
                         } else {
                             Orbit.update({ isValid: false });
                         }
@@ -270,18 +274,16 @@
                             .split(",")
                             .map(c => parseInt(c));
 
-                        hsl = { h: hsl[0], s: hsl[1], l: hsl[2] };
-
-                        console.log(hsl);
+                        Orbit.update({ color: hsl });
                         break;
                     case "rgb-value":
                         var rgb = el.value
                             .split(",")
                             .map(c => parseInt(c));
 
-                        rgb = { r: rgb[0], g: rgb[1], b: rgb[2] };
+                        var hsl = color.rgbToHSL({ r: rgb[0], g: rgb[1], b: rgb[2] });
 
-                        console.log(rgb);
+                        Orbit.update({ color: hsl });
                         break;
                     }
                 }
@@ -289,13 +291,14 @@
         },
         updaters: {
             hex: function(val) {
-                this.nodes.hexValue.value = val;
+                console.log(val);
+                this.nodes.hexValue.value = color.formatHex(val, true).toUpperCase();
             },
             rgb: function(val) {
-                this.nodes.rgbValue.value = `${ val.r }, ${ val.g }, ${ val.b }`;
+                this.nodes.rgbValue.value = color.formatRGB(val);
             },
             hsl: function (val) {
-                this.nodes.hslValue.value = `${ val.h }, ${ val.s }%, ${ val.l }%`;
+                this.nodes.hslValue.value = color.formatHSL(val);
             }
         }
     });
@@ -341,6 +344,8 @@
                 if (validate.hsl(hsl)) {
                     var rgb = color.hslToRGB(hsl);
                     var hex = color.rgbToHex(rgb);
+
+                    console.log({ hsl, rgb, hex });
 
                     // Convert and update color formats.
                     Formats.update({
