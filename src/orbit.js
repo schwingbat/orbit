@@ -218,23 +218,18 @@
                     knob.classList.remove("active");
                     knob.style.background = null;
                 }
-            }
+            },
         }
     });
 
     const Formats = new Component({
         state: {
             hex: "#ffffff",
-            rgb: {
-                r: 1,
-                g: 1,
-                b: 1,
-            },
-            hsl: {
-                h: 1,
-                s: 0,
-                l: 1
-            }
+            rgb: { r: 1, g: 1, b: 1 },
+            hsl: { h: 1, s: 0, l: 1 },
+            validHex: true,
+            validRGB: true,
+            validHSL: true,
         },
         render(el) {
             var s = this.state;
@@ -264,10 +259,10 @@
                     case "hex-value":
                         if (validate.hex(el.value)) {
                             var hsl = color.rgbToHSL(color.hexToRGB(el.value));
-                            Orbit.update({ color: hsl, isValid: validate.hsl(hsl), ignoreHashChange: true });
+                            Orbit.update({ color: hsl, ignoreHashChange: true });
                             window.location.hash = el.value;
                         } else {
-                            Orbit.update({ isValid: false });
+                            this.update({ validHex: false });
                         }
                         break;
                     case "hsl-value":
@@ -278,8 +273,12 @@
 
                         hsl = { h: hsl[0] / 360, s: hsl[1] / 100, l: hsl[2] / 100 };
 
-                        Orbit.update({ color: hsl, ignoreHashChange: true });
-                        window.location.hash = color.rgbToHex(color.hslToRGB(hsl));
+                        if (validate.hsl(hsl)) {
+                            Orbit.update({ color: hsl, ignoreHashChange: true });
+                            window.location.hash = color.rgbToHex(color.hslToRGB(hsl));
+                        } else {
+                            this.update({ validHSL: false });
+                        }
                         break;
                     case "rgb-value":
                         var rgb = el.value
@@ -289,8 +288,12 @@
                         rgb = { r: rgb[0] / 256, g: rgb[1] / 256, b: rgb[2] / 256 }
                         var hsl = color.rgbToHSL(rgb);
 
-                        Orbit.update({ color: hsl, ignoreHashChange: true });
-                        window.location.hash = color.rgbToHex(rgb);
+                        if (validate.rgb(rgb)) {
+                            Orbit.update({ color: hsl, ignoreHashChange: true });
+                            window.location.hash = color.rgbToHex(rgb);
+                        } else {
+                            this.update({ validRGB: false });
+                        }
                         break;
                     }
                 }
@@ -299,12 +302,25 @@
         updaters: {
             hex: function(val) {
                 this.nodes.hexValue.value = color.formatHex(val, true).toUpperCase();
+                this.update({ validHex: true });
             },
             rgb: function(val) {
                 this.nodes.rgbValue.value = color.formatRGB(val);
+                this.update({ validRGB: true });
             },
             hsl: function (val) {
                 this.nodes.hslValue.value = color.formatHSL(val);
+                this.update({ validHSL: true });
+            },
+            validHex: function(val) {
+                console.log("HEX IS ", val);
+                this.nodes.hexValue.parentNode.classList[ val ? "remove" : "add" ]("invalid");
+            },
+            validRGB: function(val) {
+                this.nodes.rgbValue.parentNode.classList[ val ? "remove" : "add" ]("invalid");
+            },
+            validHSL: function (val) {
+                this.nodes.hslValue.parentNode.classList[ val ? "remove" : "add" ]("invalid");
             }
         }
     });
@@ -313,7 +329,6 @@
         anchor: document.querySelector("#app"),
         state: {
             isLight: true,
-            isValid: true,
             color: {
                 h: 1,
                 s: 0,
@@ -353,20 +368,13 @@
             isLight: function(val) {
                 this.anchor.classList[ val ? "remove" : "add" ]("dark");
             },
-            isValid: function(val) {
-                this.anchor.classList[ val ? "remove" : "add" ]("invalid");
-            },
             color: function(hsl) {
                 if (validate.hsl(hsl)) {
                     var rgb = color.hslToRGB(hsl);
                     var hex = color.rgbToHex(rgb);
 
                     // Convert and update color formats.
-                    Formats.update({
-                        hex: hex,
-                        rgb: rgb,
-                        hsl: hsl,
-                    });
+                    Formats.update({ hex, rgb, hsl });
 
                     // Set HSL values on wheel.
                     Wheel.update({
@@ -375,18 +383,16 @@
                         lightness: hsl.l
                     });
 
-                    this.update({
-                        isLight: hsl.l > 0.5,
-                        isValid: true,
-                    });
+                    this.update({ isLight: hsl.l > 0.5 });
 
                     // Update background color.
                     this.anchor.style.backgroundColor = hex;
-                } else {
-                    this.update({
-                        isValid: false,
-                    });
                 }
+                // else {
+                //     this.update({
+                //         isValid: false,
+                //     });
+                // }
             },
         },
         saveColor() {
