@@ -43,13 +43,13 @@ body {
     }
 }
 
-.vertical-centerer {
+.controls-container {
     width: 100%;
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     border-color: inherit;
-    position: relative;
+    position: relative; 
 
     display: flex;
     align-items: center;
@@ -81,11 +81,11 @@ $wheel: 310px;
     height: $size;
 }
 
-.wheel, .umbrella, .color {
+#wheel, .umbrella, .color {
     @include circle($wheel);
 }
 
-.wheel {
+#wheel {
     width: $wheel;
     height: $wheel;
     margin: 0;
@@ -108,21 +108,21 @@ $wheel: 310px;
         left: 15px;
     }
 
-    .hue-wheel {
+    .wheel-track {
         position: absolute;
         top: 0; left: 0;
         width: $wheel;
         height: $wheel;
         //transition: transform $trans-speed;
 
-        .handle {
+        .wheel-knob {
             margin: 0 auto;
             top: 0;
             width: 30px;
             height: 30px;
             border-radius: 50%;
             border: 2px solid transparent;
-            background-color: #fff;
+            background-color: #000;
             cursor: grab;
             &.active { border-color: #fff; }
         }
@@ -165,14 +165,14 @@ $wheel: 310px;
             font-weight: 200;
         }
 
-        .slider {
+        .slider-track {
             width: 100%;
             height: 1px;
-            background: #fff;
+            background: #000;
             display: block;
             margin: 18px 0;
 
-            .knob {
+            .slider-knob {
                 display: inline-block;
                 margin-top: -15px;
                 width: 30px;
@@ -232,7 +232,7 @@ $wheel: 310px;
             padding: 0;
             margin: 0;
 
-            color: #fff;
+            color: #000;
         }
     }
 
