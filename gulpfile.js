@@ -40,8 +40,9 @@ gulp.task("bundle", () => {
 gulp.task("copy", () => {
     gulp.src("./src/index.html").pipe(gulp.dest("./build"));
     gulp.src("./src/img/**/*").pipe(gulp.dest("./build/img"));
+    gulp.src("./src/manifest.*").pipe(gulp.dest("./build"));
 });
 
-gulp.task("build", ["clean","sass","bundle", "copy"], () => {
+gulp.task("build", ["sass", "bundle", "copy"], () => {
     console.log("Orbit was built in /build");
 });
