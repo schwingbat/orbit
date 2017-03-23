@@ -18,7 +18,7 @@
         },
         render(el) {
             return el("div", { id: "wheel" }, [
-                el("img", { "src": "img/colors.png", "id": "color-wheel", "class": "colors" }),
+                el("img", { "src": "img/colors.png", "id": "color-wheel" }),
                 el("div", { "id": "hue-guide", "class": "hue-guide" }),
                 el("div", {
                     "id": "hue-wheel",
@@ -28,31 +28,29 @@
                     }}, [
                     el("div", { "id": "hue-knob", "class": "knob" })
                 ]),
-                el("div", { "class": "inner" }, [
-                    el("ul", { "class": "properties" }, [
-                        el("li", null, [
-                            el("span", { "class": "label" }, "SATURATION"),
-                            el("div", { "id": "saturation-slider", "class": "slider-track" }, [
-                                el("div", {
-                                    "id": "saturation-knob",
-                                    "class": "knob slider-knob",
-                                    "style": {
-                                        "margin-left": this.state.saturation * 100 + "%"
-                                    }
-                                })
-                            ])
-                        ]),
-                        el("li", null, [
-                            el("span", { "class": "label" }, "LIGHTNESS"),
-                            el("div", { "id": "lightness-slider", "class": "slider-track" }, [
-                                el("div", {
-                                    "id": "lightness-knob",
-                                    "class": "knob slider-knob",
-                                    "style" : {
-                                        "margin-left": this.state.lightness * 100 + "%"
-                                    },
-                                })
-                            ])
+                el("ul", { "class": "properties" }, [
+                    el("li", null, [
+                        el("span", { "class": "label" }, "SATURATION"),
+                        el("div", { "id": "saturation-slider", "class": "slider-track" }, [
+                            el("div", {
+                                "id": "saturation-knob",
+                                "class": "knob slider-knob",
+                                "style": {
+                                    "margin-left": this.state.saturation * 100 + "%"
+                                }
+                            })
+                        ])
+                    ]),
+                    el("li", null, [
+                        el("span", { "class": "label" }, "LIGHTNESS"),
+                        el("div", { "id": "lightness-slider", "class": "slider-track" }, [
+                            el("div", {
+                                "id": "lightness-knob",
+                                "class": "knob slider-knob",
+                                "style" : {
+                                    "margin-left": this.state.lightness * 100 + "%"
+                                },
+                            })
                         ])
                     ])
                 ])
@@ -85,6 +83,7 @@
 
             function handleMouseMove(e) {
                 if (state.changingHue) {
+                    e.preventDefault();
                     // Handle wheel movement logic.
 
                     // First get the center of the wheel.
@@ -113,6 +112,7 @@
                 }
 
                 if (state.changingSat) {
+                    e.preventDefault();
                     // Handle horizontal slider logic.
 
                     var rect = self.nodes.saturationSlider.getBoundingClientRect();
@@ -134,6 +134,7 @@
                 }
 
                 if (state.changingLight) {
+                    e.preventDefault();
                     // This is the same as above. I guess I should split this out into another component.
 
                     var rect = self.nodes.lightnessSlider.getBoundingClientRect();
@@ -225,8 +226,8 @@
     const Formats = new Component({
         state: {
             hex: "#ffffff",
-            rgb: { r: 1, g: 1, b: 1 },
-            hsl: { h: 1, s: 0, l: 1 },
+            rgb: { r: 1, g: 1, b: 0.5 },
+            hsl: { h: 1, s: 0, l: 0.5 },
             validHex: true,
             validRGB: true,
             validHSL: true,
@@ -328,7 +329,7 @@
         anchor: document.querySelector("#app"),
         state: {
             isLight: true,
-            color: { h: 1, s: 0, l: 1 },
+            color: { h: 1, s: 0, l: 0.5 },
         },
         render(el) {
             return el("div", { "class": "controls-container" }, [ Wheel.el, Formats.el ]);

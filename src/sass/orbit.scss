@@ -1,5 +1,6 @@
 $trans-speed: 0.2s;
-
+$medium: 550px;
+$large: 800px;
 $font-stack: -apple-system, BlinkMacSystemFont, 
     "Segoe UI", "Roboto", "Oxygen", 
     "Ubuntu", "Cantarell", "Fira Sans", 
@@ -8,9 +9,9 @@ $font-stack: -apple-system, BlinkMacSystemFont,
 *,
 *:before,
 *:after {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
-    -webkit-user-select: none;
-    -moz-user-select: none;
     user-select: none;
 }
 
@@ -26,7 +27,7 @@ $font-stack: -apple-system, BlinkMacSystemFont,
 
 body {
     font-family: $font-stack;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 #app {
@@ -35,6 +36,13 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &.dark {
         color:#fff;
@@ -46,10 +54,10 @@ body {
         }
 
         .slider-track,
-        .knob,
-        .scheme-chooser li.active {
+        .knob {
             background: #fff;
         }
+
         .handle.active { border-color: #fff; }
 
         .knob.active {
@@ -59,25 +67,24 @@ body {
 }
 
 .controls-container {
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+    padding-top: 10px;
+    margin: auto;
+
     border-color: inherit;
     position: relative; 
 
     display: flex;
     align-items: center;
     flex-direction: column;
+    justify-content: center;
 
-    @media (min-width: 600px) {
+    @media (min-width: $medium) {
         flex-direction: row;
-        width: 540px;
-        height: 400px;
-        position: absolute;
-        overflow: visible;
-        top: calc(50% - 200px);
-        left: calc(50% - 270px);
+        max-width: 550px;
+    }
+
+    @media (min-width: $large) {
+        max-width: 720px;
     }
 }
 
@@ -86,48 +93,52 @@ body {
 ************************/
 
 $wheel: 310px;
+$largewheel: 400px;
 
 /* Outer Wheel */
 
-@mixin circle($size) {
-    content: "";
-    border-radius: 50%;
-    width: $size;
-    height: $size;
-}
-
-#wheel, .umbrella, .color {
-    @include circle($wheel);
-}
-
 #wheel {
+    border-radius: 50%;
     width: $wheel;
     height: $wheel;
-    margin: 0;
+
+    flex: 0 0 $wheel;
+
     position: relative;
 
-    .inner {
-        position: absolute;
-        left: 75px; top: 75px; bottom: 75px; right: 75px;
-        display: flex;
-        align-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media (min-width: $large) {
+        width: $largewheel;
+        height: $largewheel;
+        flex: 0 0 $largewheel;
     }
 
     .hue-guide {
-        @include circle(280px);
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        border-radius: 50%;
         border: 1px solid;
         border-color: inherit;
         // transition: $trans-speed;
-        position: absolute;
-        top: 15px;
-        left: 15px;
+
+        margin: 19px;
+    
+        // @media (min-width: $large) {
+        //     margin: 14px;
+        // }
     }
 
     .wheel-track {
         position: absolute;
         top: 0; left: 0;
-        width: $wheel;
-        height: $wheel;
+        width: 100%;
+        height: 100%;
         //transition: transform $trans-speed;
 
         .knob {
@@ -135,24 +146,27 @@ $wheel: 310px;
             top: 0;
         }
     }
+}
 
-    .colors {
-        width: $wheel;
-        height: $wheel;
-        transition: 0.4s;
-        transform: scale(0.5);
-        opacity: 0;
-        pointer-events: none;
-        &.active {
-            opacity: 1;
-            transform: scale(1.5);
-        }
+#color-wheel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    transition: 0.4s;
+    transform: scale(0.5);
+    opacity: 0;
+    pointer-events: none;
+
+    &.active {
+        opacity: 1;
+        transform: scale(1.5);
     }
 }
 
 .knob {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 2px solid transparent;
     background-color: #000;
@@ -162,27 +176,36 @@ $wheel: 310px;
     &.active {
         border-color: #000;
     }
+
+    // @media (min-width: $large) {
+    //     width: 30px;
+    //     height: 30px;
+    // }
 }
 
 /* Saturation and Lightness Sliders */
 
 .properties {
-    padding: 0;
-    margin: 0 auto;
     list-style: none;
-    width: 100%;
+    flex: 0 0 50%;
     border-color: inherit;
 
     li {
         margin-bottom: 35px;
         position: relative;
         border-color: inherit;
-        &:last-child { margin-bottom: 0; }
+
+        @media (min-width: $large) {
+            margin-bottom: 42px;
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
 
         .label {
             display: block;
             color: inherit;
-            margin-bottom: 4px;
             text-align: center;
             font-weight: bold;
         }
@@ -192,12 +215,15 @@ $wheel: 310px;
             height: 1px;
             background: #000;
             display: block;
-            margin: 18px 0;
+            margin: 24px 0;
+
+            @media (min-width: $large) {
+                margin: 30px 0;
+            }
 
             .knob {
                 display: inline-block;
-                margin-top: -15px;
-                transform: translateX(-50%);
+                transform: translate(-50%, -50%);
             }
         }
     }
@@ -210,12 +236,18 @@ $wheel: 310px;
 .formats {
     list-style: none;
     width: 280px;
-    margin: 30px auto 0 auto;
-    padding: 0 0 5% 0;
+    margin: 15px auto 0 auto;
+    padding-bottom: 8%;
 
-    @media (min-width: 600px) {
-        margin: auto 0 auto auto;
-        width: 200px;
+    @media (min-width: $medium) {
+        margin: auto 14px auto 1em;
+        width: 205px;
+        padding-bottom: 0;
+    }
+
+    @media (min-width: $large) {
+        margin: auto 14px auto 2em;
+        width: 250px;
     }
 
     .invalid {
@@ -225,11 +257,15 @@ $wheel: 310px;
     li {
         border: 1px solid;
         border-radius: 9999px;
-        padding: 12px 20px;
+        padding: 0.8em 1.6em;
         width: 100%;
         // transition: $trans-speed;
         text-align: right;
         margin-bottom: 12px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
 
         position: relative;
 
@@ -246,8 +282,9 @@ $wheel: 310px;
             text-align: right;
             font-family: $font-stack;
             width: 70%;
-            padding: 0;
-            margin: 0;
+            padding: 0.2em 0;
+
+            border-radius: 0;
 
             border-bottom: 1px solid #000;
 
