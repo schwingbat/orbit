@@ -1,410 +1,442 @@
-(function() {
-    "use strict";
+const loadedTime = Date.now();
+const color = require('./lib/convert');
+const validate = require('./lib/validate');
+const swatchify = require('./lib/swatchify');
+const Component = require('@schwingbat/component');
 
-    var loadedTime = Date.now();
+const Wheel = new Component({
+	state: {
+		hue: 1,
+		saturation: 0.5,
+		lightness: 0.7,
+		changingHue: false,
+		changingSat: false,
+		changingLight: false,
+	},
+	render(el) {
+		return el('div', { id: 'wheel' }, [
+			el('img', { 'src': 'img/colors.png', 'id': 'color-wheel' }),
+			el('div', { 'id': 'hue-guide', 'class': 'hue-guide' }),
+			el('div', {
+				'id': 'hue-wheel',
+				'class': 'wheel-track',
+				'style': {
+					'transform': 'rotate(' + this.state.hue * 360 + 'deg)'
+				}}, [
+					el('div', { 'id': 'hue-knob', 'class': 'knob' })
+				]),
+			el('ul', { 'class': 'properties' }, [
+				el('li', null, [
+					el('span', { 'class': 'label' }, 'SATURATION'),
+					el('div', { 'id': 'saturation-slider', 'class': 'slider-track' }, [
+						el('div', {
+							'id': 'saturation-knob',
+							'class': 'knob slider-knob',
+							'style': {
+								'margin-left': this.state.saturation * 100 + '%'
+							}
+						})
+					])
+				]),
+				el('li', null, [
+					el('span', { 'class': 'label' }, 'LIGHTNESS'),
+					el('div', { 'id': 'lightness-slider', 'class': 'slider-track' }, [
+						el('div', {
+							'id': 'lightness-knob',
+							'class': 'knob slider-knob',
+							'style' : {
+								'margin-left': this.state.lightness * 100 + '%'
+							},
+						})
+					])
+				])
+			])
+		]);
+	},
+	postrender() {
+		// You can't currently add event listeners outside the component's elements,
+		// so it has to be initialized in postrender for the time being.
 
-    const validate = require("./lib/validate-color");
-    const color = require("./lib/convert-color");
-    const Component = require("@schwingbat/component");
+		// When the mouse is released on the document body, handle the mouseup/touchend
+		// event and tie up loose ends.
 
-    const Wheel = new Component({
-        state: {
-            hue: 1,
-            saturation: 0.5,
-            lightness: 0.7,
-            changingHue: false,
-            changingSat: false,
-            changingLight: false,
-        },
-        render(el) {
-            return el("div", { id: "wheel" }, [
-                el("img", { "src": "img/colors.png", "id": "color-wheel" }),
-                el("div", { "id": "hue-guide", "class": "hue-guide" }),
-                el("div", {
-                    "id": "hue-wheel",
-                    "class": "wheel-track",
-                    "style": {
-                        "transform": "rotate(" + this.state.hue * 360 + "deg)"
-                    }}, [
-                    el("div", { "id": "hue-knob", "class": "knob" })
-                ]),
-                el("ul", { "class": "properties" }, [
-                    el("li", null, [
-                        el("span", { "class": "label" }, "SATURATION"),
-                        el("div", { "id": "saturation-slider", "class": "slider-track" }, [
-                            el("div", {
-                                "id": "saturation-knob",
-                                "class": "knob slider-knob",
-                                "style": {
-                                    "margin-left": this.state.saturation * 100 + "%"
-                                }
-                            })
-                        ])
-                    ]),
-                    el("li", null, [
-                        el("span", { "class": "label" }, "LIGHTNESS"),
-                        el("div", { "id": "lightness-slider", "class": "slider-track" }, [
-                            el("div", {
-                                "id": "lightness-knob",
-                                "class": "knob slider-knob",
-                                "style" : {
-                                    "margin-left": this.state.lightness * 100 + "%"
-                                },
-                            })
-                        ])
-                    ])
-                ])
-            ])
-        },
-        postrender() {
-            // You can't currently add event listeners outside the component's elements,
-            // so it has to be initialized in postrender for the time being.
+		const self = this;
+		const state = self.state;
 
-            // When the mouse is released on the document body, handle the mouseup/touchend
-            // event and tie up loose ends.
+		function handleMouseUpOutsideElements() {
+			if (state.changingHue || state.changingSat || state.changingLight) {
+				Orbit.saveColor();
+			}
 
-            const self = this;
-            const state = self.state;
+			self.update({
+				changingHue: false,
+				changingSat: false,
+				changingLight: false,
+			});
+		}
 
-            function handleMouseUpOutsideElements(e) {
-                if (state.changingHue || state.changingSat || state.changingLight) {
-                    Orbit.saveColor();
-                }
+		document.body.addEventListener('mouseup', handleMouseUpOutsideElements);
+		document.body.addEventListener('touchend', handleMouseUpOutsideElements);
 
-                self.update({
-                    changingHue: false,
-                    changingSat: false,
-                    changingLight: false,
-                });
-            }
+		function handleMouseMove(e) {
+			if (state.changingHue) {
+				e.preventDefault();
+				// Handle wheel movement logic.
 
-            document.body.addEventListener("mouseup", handleMouseUpOutsideElements);
-            document.body.addEventListener("touchend", handleMouseUpOutsideElements);
+				// First get the center of the wheel.
+				const hRect = self.nodes.hueGuide.getBoundingClientRect();
+				const wheelCenter = {
+					x: hRect.left + (self.nodes.hueGuide.offsetWidth / 2),
+					y: hRect.top + (self.nodes.hueGuide.offsetHeight / 2),
+				};
 
-            function handleMouseMove(e) {
-                if (state.changingHue) {
-                    e.preventDefault();
-                    // Handle wheel movement logic.
+				// Now get the relative angle of mouse from the wheel center.
+				const x = (e.touches ? e.touches[0].clientX : e.clientX) - wheelCenter.x;
+				const y = (e.touches ? e.touches[0].clientY : e.clientY) - wheelCenter.y;
+				let degs = Math.round(90 + Math.atan2(y, x) * (180 / Math.PI));
 
-                    // First get the center of the wheel.
-                    var rect = self.nodes.hueGuide.getBoundingClientRect();
-                    var wheelCenter = {
-                        x: rect.left + (self.nodes.hueGuide.offsetWidth / 2),
-                        y: rect.top + (self.nodes.hueGuide.offsetHeight / 2),
-                    };
+				if (degs < 0) degs += 360;
 
-                    // Now get the relative angle of mouse from the wheel center.
-                    var x = (e.touches ? e.touches[0].clientX : e.clientX) - wheelCenter.x;
-                    var y = (e.touches ? e.touches[0].clientY : e.clientY) - wheelCenter.y;
-                    var degs = Math.round(90 + Math.atan2(y, x) * (180 / Math.PI));
+				self.nodes.hueKnob.style.background = `hsl(${ degs }, 100%, 50%)`;
 
-                    if (degs < 0) degs += 360;
+				Orbit.update({
+					color: {
+						h: degs / 360,
+						s: state.saturation,
+						l: state.lightness
+					}
+				});
+			}
 
-                    self.nodes.hueKnob.style.background = `hsl(${ degs }, 100%, 50%)`;
+			if (state.changingSat) {
+				e.preventDefault();
+				// Handle horizontal slider logic.
 
-                    Orbit.update({
-                        color: {
-                            h: degs / 360,
-                            s: state.saturation,
-                            l: state.lightness
-                        }
-                    });
-                }
+				const sRect = self.nodes.saturationSlider.getBoundingClientRect();
 
-                if (state.changingSat) {
-                    e.preventDefault();
-                    // Handle horizontal slider logic.
+				// This looks crazy, but it's just the percentage the mouse is
+				// between the left and right sides of the slider track in viewport space.
+				const sAmount = Math.max(0, Math.min(1, ((e.touches ? e.touches[0].clientX : e.clientX) - sRect.left) / sRect.width));
 
-                    var rect = self.nodes.saturationSlider.getBoundingClientRect();
+				self.nodes.saturationKnob.style.background = `hsl(${ state.hue * 360 }, ${ sAmount * 100 }%, 50%)`;
+				self.nodes.saturationKnob.style.marginLeft = `${ sAmount * 100 }%`;
 
-                    // This looks crazy, but it's just the percentage the mouse is
-                    // between the left and right sides of the slider track in viewport space.
-                    var amount = Math.max(0, Math.min(1, ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width));
+				Orbit.update({
+					color: {
+						h: state.hue,
+						s: sAmount,
+						l: state.lightness
+					}
+				});
+			}
 
-                    self.nodes.saturationKnob.style.background = `hsl(${ state.hue * 360 }, ${ amount * 100 }%, 50%)`;
-                    self.nodes.saturationKnob.style.marginLeft = `${ amount * 100 }%`;
+			if (state.changingLight) {
+				e.preventDefault();
+				// This is the same as above. I guess I should split this out into another component.
 
-                    Orbit.update({
-                        color: {
-                            h: state.hue,
-                            s: amount,
-                            l: state.lightness
-                        }
-                    });
-                }
+				const lRect = self.nodes.lightnessSlider.getBoundingClientRect();
+				const lAmount = Math.max(0, Math.min(1, ((e.touches ? e.touches[0].clientX : e.clientX) - lRect.left) / lRect.width));
 
-                if (state.changingLight) {
-                    e.preventDefault();
-                    // This is the same as above. I guess I should split this out into another component.
+				self.nodes.lightnessKnob.style.background = `hsl(${ state.hue * 360 }, 0%, ${ lAmount * 100 }%)`;
+				self.nodes.lightnessKnob.style.marginLeft = `${ lAmount * 100 }%`;
 
-                    var rect = self.nodes.lightnessSlider.getBoundingClientRect();
-                    var amount = Math.max(0, Math.min(1, ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width));
+				Orbit.update({
+					color: {
+						h: state.hue,
+						s: state.saturation,
+						l: lAmount
+					}
+				});
+			}
+		}
 
-                    self.nodes.lightnessKnob.style.background = `hsl(${ state.hue * 360 }, 0%, ${ amount * 100 }%)`;
-                    self.nodes.lightnessKnob.style.marginLeft = `${ amount * 100 }%`;
+		document.body.addEventListener('mousemove', handleMouseMove);
+		document.body.addEventListener('touchmove', handleMouseMove);
+	},
+	events: {
+		'[mousedown, touchstart] #hue-knob': function() {
+			this.update({ changingHue: true });
+		},
+		'[mousedown, touchstart] .slider-knob': function(e, el) {
+			switch (el.id) {
+			case 'saturation-knob':
+				this.update({ changingSat: true });
+				break;
+			case 'lightness-knob':
+				this.update({ changingLight: true });
+				break;
+			}
+		},
+	},
+	updaters: {
+		hue: function(val) {
+			this.nodes.hueWheel.style.transform = `rotate(${ val * 360 }deg)`;
+		},
+		saturation: function(val) {
+			this.nodes.saturationKnob.style.marginLeft = (val * 100) + '%';
+		},
+		lightness: function(val) {
+			this.nodes.lightnessKnob.style.marginLeft = (val * 100) + '%';
+		},
+		changingHue: function(val) {
+			const knob = this.nodes.hueKnob;
+			const { hue } = this.state;
 
-                    Orbit.update({
-                        color: {
-                            h: state.hue,
-                            s: state.saturation,
-                            l: amount
-                        }
-                    });
-                }
-            }
+			if (val) {
+				knob.classList.add('active');
+				knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, 100%, 50%)`;
+				this.nodes.colorWheel.classList.add('active');
 
-            document.body.addEventListener("mousemove", handleMouseMove);
-            document.body.addEventListener("touchmove", handleMouseMove);
-        },
-        events: {
-            "[mousedown, touchstart] #hue-knob": function(e, el) {
-                this.update({ changingHue: true });
-            },
-            "[mousedown, touchstart] .slider-knob": function(e, el) {
-                switch (el.id) {
-                case "saturation-knob":
-                    this.update({ changingSat: true });
-                    break;
-                case "lightness-knob":
-                    this.update({ changingLight: true });
-                    break;
-                }
-            },
-        },
-        updaters: {
-            hue: function(val) {
-                this.nodes.hueWheel.style.transform = `rotate(${ val * 360 }deg)`;
-            },
-            saturation: function(val) {
-                this.nodes.saturationKnob.style.marginLeft = (val * 100) + "%";
-            },
-            lightness: function(val) {
-                this.nodes.lightnessKnob.style.marginLeft = (val * 100) + "%";
-            },
-            changingHue: function(val) {
-                var knob = this.nodes.hueKnob;
-                var { hue } = this.state;
+			} else {
+				knob.classList.remove('active');
+				knob.style.background = null;
+				this.nodes.colorWheel.classList.remove('active');
+			}
+		},
+		changingSat: function(val) {
+			const knob = this.nodes.saturationKnob;
+			const { hue, saturation } = this.state;
 
-                if (val) {
-                    knob.classList.add("active");
-                    knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, 100%, 50%)`;
-                    this.nodes.colorWheel.classList.add("active");
+			if (val) {
+				knob.classList.add('active');
+				knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, ${ (saturation * 100).toFixed(1) }%, 50%)`;
+			} else {
+				knob.classList.remove('active');
+				knob.style.background = null;
+			}
+		},
+		changingLight: function(val) {
+			const knob = this.nodes.lightnessKnob;
+			const { hue, lightness } = this.state;
 
-                } else {
-                    knob.classList.remove("active");
-                    knob.style.background = null;
-                    this.nodes.colorWheel.classList.remove("active");
-                }
-            },
-            changingSat: function(val) {
-                var knob = this.nodes.saturationKnob;
-                var { hue, saturation } = this.state;
+			if (val) {
+				knob.classList.add('active');
+				knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, 0%, ${ (lightness * 100).toFixed(1) }%)`;
+			} else {
+				knob.classList.remove('active');
+				knob.style.background = null;
+			}
+		},
+	}
+});
 
-                if (val) {
-                    knob.classList.add("active");
-                    knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, ${ (saturation * 100).toFixed(1) }%, 50%)`;
-                } else {
-                    knob.classList.remove("active");
-                    knob.style.background = null;
-                }
-            },
-            changingLight: function(val) {
-                var knob = this.nodes.lightnessKnob;
-                var { hue, lightness } = this.state;
+const Formats = new Component({
+	state: {
+		hex: '#ffffff',
+		rgb: { r: 1, g: 1, b: 0.5 },
+		hsl: { h: 1, s: 0, l: 0.5 },
+		validHex: true,
+		validRGB: true,
+		validHSL: true,
+	},
+	render(el) {
+		const s = this.state;
+		const hex = s.hex;
+		const rgb = color.formatRGB(s.rgb);
+		const hsl = color.formatHSL(s.hsl);
 
-                if (val) {
-                    knob.classList.add("active");
-                    knob.style.background = `hsl(${ (hue * 360).toFixed(1) }, 0%, ${ (lightness * 100).toFixed(1) }%)`;
-                } else {
-                    knob.classList.remove("active");
-                    knob.style.background = null;
-                }
-            },
-        }
-    });
+		return el('ul', { 'class': 'formats' }, [
+			el('li', { 'class': 'hsl' }, [
+				el('span', { 'class': 'label' }, 'HSL'),
+				el('input', { 'id': 'hsl-value', 'class': 'result', 'value': hsl })
+			]),
+			el('li', { 'class': 'hex' }, [
+				el('span', { 'class': 'label' }, 'HEX'),
+				el('input', { 'id': 'hex-value', 'class': 'result', 'value': hex })
+			]),
+			el('li', { 'class': 'rgb' }, [
+				el('span', { 'class': 'label' }, 'RGB'),
+				el('input', { 'id': 'rgb-value', 'class': 'result', 'value': rgb })
+			])
+		]);
+	},
+	events: {
+		'keydown .result': function(e, el) {
+			if (e.keyCode === 13) { // Enter
+				let hsl;
+				let rgb;
 
-    const Formats = new Component({
-        state: {
-            hex: "#ffffff",
-            rgb: { r: 1, g: 1, b: 0.5 },
-            hsl: { h: 1, s: 0, l: 0.5 },
-            validHex: true,
-            validRGB: true,
-            validHSL: true,
-        },
-        render(el) {
-            var s = this.state;
-            var hex = s.hex;
-            var rgb = color.formatRGB(s.rgb);
-            var hsl = color.formatHSL(s.hsl);
+				switch (el.id) {
+				case 'hex-value':
+					if (validate.hex(el.value)) {
+						hsl = color.rgbToHSL(color.hexToRGB(el.value));
+						Orbit.update({ color: hsl });
+						Orbit.setHash(el.value);
+					} else {
+						this.update({ validHex: false });
+					}
+					break;
+				case 'hsl-value':
+					hsl = el.value
+						.replace('%', '')
+						.split(',')
+						.map(c => parseInt(c));
 
-            return el("ul", { "class": "formats" }, [
-                el("li", { "class": "hsl" }, [
-                    el("span", { "class": "label" }, "HSL"),
-                    el("input", { "id": "hsl-value", "class": "result", "value": hsl })
-                ]),
-                el("li", { "class": "hex" }, [
-                    el("span", { "class": "label" }, "HEX"),
-                    el("input", { "id": "hex-value", "class": "result", "value": hex })
-                ]),
-                el("li", { "class": "rgb" }, [
-                    el("span", { "class": "label" }, "RGB"),
-                    el("input", { "id": "rgb-value", "class": "result", "value": rgb })
-                ])
-            ]);
-        },
-        events: {
-            "keydown .result": function(e, el) {
-                if (e.keyCode === 13) { // Enter
-                    switch (el.id) {
-                    case "hex-value":
-                        if (validate.hex(el.value)) {
-                            var hsl = color.rgbToHSL(color.hexToRGB(el.value));
-                            Orbit.update({ color: hsl });
-                            Orbit.setHash(el.value);
-                        } else {
-                            this.update({ validHex: false });
-                        }
-                        break;
-                    case "hsl-value":
-                        var hsl = el.value
-                            .replace("%", "")
-                            .split(",")
-                            .map(c => parseInt(c));
+					hsl = { h: hsl[0] / 360, s: hsl[1] / 100, l: hsl[2] / 100 };
 
-                        hsl = { h: hsl[0] / 360, s: hsl[1] / 100, l: hsl[2] / 100 };
+					if (validate.hsl(hsl)) {
+						Orbit.update({ color: hsl });
+						Orbit.setHash(hsl);
+					} else {
+						this.update({ validHSL: false });
+					}
+					break;
+				case 'rgb-value':
+					rgb = el.value
+						.split(',')
+						.map(c => parseInt(c));
 
-                        if (validate.hsl(hsl)) {
-                            Orbit.update({ color: hsl });
-                            Orbit.setHash(hsl);
-                        } else {
-                            this.update({ validHSL: false });
-                        }
-                        break;
-                    case "rgb-value":
-                        var rgb = el.value
-                            .split(",")
-                            .map(c => parseInt(c));
+					rgb = { r: rgb[0] / 256, g: rgb[1] / 256, b: rgb[2] / 256 };
+					hsl = color.rgbToHSL(rgb);
 
-                        rgb = { r: rgb[0] / 256, g: rgb[1] / 256, b: rgb[2] / 256 }
-                        var hsl = color.rgbToHSL(rgb);
+					if (validate.rgb(rgb)) {
+						Orbit.update({ color: hsl });
+						Orbit.setHash(rgb);
+					} else {
+						this.update({ validRGB: false });
+					}
+					break;
+				}
+			}
+		}
+	},
+	updaters: {
+		hex: function(val) {
+			this.nodes.hexValue.value = color.formatHex(val, true);
+			this.update({ validHex: true });
+		},
+		rgb: function(val) {
+			this.nodes.rgbValue.value = color.formatRGB(val);
+			this.update({ validRGB: true });
+		},
+		hsl: function(val) {
+			this.nodes.hslValue.value = color.formatHSL(val);
+			this.update({ validHSL: true });
+		},
+		validHex: function(val) {
+			this.nodes.hexValue.parentNode.classList[val ? 'remove' : 'add']('invalid');
+		},
+		validRGB: function(val) {
+			this.nodes.rgbValue.parentNode.classList[val ? 'remove' : 'add']('invalid');
+		},
+		validHSL: function(val) {
+			this.nodes.hslValue.parentNode.classList[val ? 'remove' : 'add']('invalid');
+		}
+	}
+});
 
-                        if (validate.rgb(rgb)) {
-                            Orbit.update({ color: hsl });
-                            orbit.setHash(rgb);
-                        } else {
-                            this.update({ validRGB: false });
-                        }
-                        break;
-                    }
-                }
-            }
-        },
-        updaters: {
-            hex: function(val) {
-                this.nodes.hexValue.value = color.formatHex(val, true);
-                this.update({ validHex: true });
-            },
-            rgb: function(val) {
-                this.nodes.rgbValue.value = color.formatRGB(val);
-                this.update({ validRGB: true });
-            },
-            hsl: function (val) {
-                this.nodes.hslValue.value = color.formatHSL(val);
-                this.update({ validHSL: true });
-            },
-            validHex: function(val) {
-                this.nodes.hexValue.parentNode.classList[ val ? "remove" : "add" ]("invalid");
-            },
-            validRGB: function(val) {
-                this.nodes.rgbValue.parentNode.classList[ val ? "remove" : "add" ]("invalid");
-            },
-            validHSL: function (val) {
-                this.nodes.hslValue.parentNode.classList[ val ? "remove" : "add" ]("invalid");
-            }
-        }
-    });
+const Orbit = new Component({
+	anchor: document.querySelector('#app'),
+	state: {
+		isLight: true,
+		color: { h: 1, s: 0, l: 0.5 },
+	},
+	render(el) {
+		return el('div', { 'class': 'orbit-container' }, [
+			el('a', { 'href': '#', 'class': 'download-swatch' }, [
+				el('span', { 'class': 'download-swatch-label' }, 'Download Swatch'),
+				el('div', { 'class': 'download-swatch-icon' }, [
+					el('div', { 'class': 'dl-icon-piece dl-icon-1' }),
+					el('div', { 'class': 'dl-icon-piece dl-icon-2' }),
+					el('div', { 'class': 'dl-icon-piece dl-icon-3' }),
+				]),
+			]),
+			el('div', { 'class': 'controls-container' }, [
+				Wheel.el,
+				Formats.el
+			]),
+		]);
+	},
+	postrender() {
+		window.addEventListener('hashchange', () => {
+			if (this.state.ignoreHashChange) {
+				this.update({ ignoreHashChange: false });
+			} else {
+				const newHash = '#' + window.location.hash.split('#').pop();
+				this.update({ color: color.rgbToHSL(color.hexToRGB(newHash)) });
+			}
+		});
 
-    const Orbit = new Component({
-        anchor: document.querySelector("#app"),
-        state: {
-            isLight: true,
-            color: { h: 1, s: 0, l: 0.5 },
-        },
-        render(el) {
-            return el("div", { "class": "controls-container" }, [ Wheel.el, Formats.el ]);
-        },
-        postrender() {
-            const self = this;
+		// Get color from URL on load.
+		if (window.location.hash.indexOf('#') !== -1) {
+			this.update({ color: color.rgbToHSL(color.hexToRGB('#' + window.location.hash.split('#').pop())) });
+		} else {
+			// Load saved color.
+			const saved = localStorage.getItem('OrbitSavedColor');
 
-            window.addEventListener("hashchange", function(e) {
-                if (self.state.ignoreHashChange) {
-                    self.update({ ignoreHashChange: false });
-                } else {
-                    var newHash = "#" + window.location.hash.split("#").pop();
-                    self.update({ color: color.rgbToHSL(color.hexToRGB(newHash)) });
-                }
-            });
+			if (saved) {
+				this.update({ color: JSON.parse(saved) });
+			} else {
+				this.update({ color: color.rgbToHSL({ h: 0.775, s: 0.6, l: 0.84 }) });
+			}
+		}
 
-            // Get color from URL on load.
-            if (window.location.hash.indexOf('#') !== -1) {
-                self.update({ color: color.rgbToHSL(color.hexToRGB('#' + window.location.hash.split("#").pop())) });
-            } else {
-                // Load saved color.
-                const saved = localStorage.getItem("OrbitSavedColor");
+		console.log(`Orbit initialized and rendered in ${ Date.now() - loadedTime }ms.`);
+	},
+	events: {
+		'click .download-swatch': function(e) {
+			e.preventDefault();
+			console.log('clicked');
 
-                if (saved) {
-                    self.update({ color: JSON.parse(saved) });
-                } else {
-                    self.update({ color: color.rgbToHSL({ h: 0.775, s: 0.6, l: 0.84 }) });
-                }
-            }
+			const c = {
+				hex: Formats.state.hex,
+				rgb: color.formatRGB(Formats.state.rgb),
+				hsl: color.formatHSL(Formats.state.hsl),
+			};
 
-            console.log(`Orbit initialized and rendered in ${ Date.now() - loadedTime }ms.`);
-        },
-        updaters: {
-            isLight: function(val) {
-                this.anchor.classList[ val ? "remove" : "add" ]("dark");
-            },
-            color: function(hsl) {
-                if (validate.hsl(hsl)) {
-                    var rgb = color.hslToRGB(hsl);
-                    var hex = color.rgbToHex(rgb);
+			const swatch = swatchify(c);
 
-                    // Convert and update color formats.
-                    Formats.update({ hex, rgb, hsl });
+			const a = document.createElement('a');
+			a.setAttribute('download', 'swatch-' + c.hex.slice(1));
+			a.setAttribute('href', swatch);
 
-                    // Set HSL values on wheel.
-                    Wheel.update({
-                        hue: hsl.h,
-                        saturation: hsl.s,
-                        lightness: hsl.l
-                    });
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+		}
+	},
+	updaters: {
+		isLight: function(val) {
+			this.anchor.classList[val ? 'remove' : 'add']('dark');
+		},
+		color: function(hsl) {
+			if (validate.hsl(hsl)) {
+				const rgb = color.hslToRGB(hsl);
+				const hex = color.rgbToHex(rgb);
 
-                    this.update({ isLight: hsl.l > 0.5 });
+				// Convert and update color formats.
+				Formats.update({ hex, rgb, hsl });
 
-                    // Update background color.
-                    this.anchor.style.backgroundColor = hex;
-                }
-            },
-        },
-        saveColor() {
-            localStorage.setItem("OrbitSavedColor", JSON.stringify(this.state.color));
-            this.setHash(this.state.color);
-        },
-        setHash(val) {
-            // Convert any color to hex and update the hash without triggering the event handler.
-            this.update({ ignoreHashChange: true });
+				// Set HSL values on wheel.
+				Wheel.update({
+					hue: hsl.h,
+					saturation: hsl.s,
+					lightness: hsl.l
+				});
 
-            if (validate.hex(val)) {
-                window.location.hash = color.formatHex(val);
-            } else if (validate.rgb(val)) {
-                window.location.hash = color.rgbToHex(val);
-            } else if (validate.hsl(val)) {
-                window.location.hash = color.rgbToHex(color.hslToRGB(val));
-            } else {
-                this.update({ ignoreHashChange: false });
-            }
-        }
-    });
-})();
+				this.update({ isLight: hsl.l > 0.5 });
+
+				// Update background color.
+				this.anchor.style.backgroundColor = hex;
+			}
+		},
+	},
+	saveColor() {
+		localStorage.setItem('OrbitSavedColor', JSON.stringify(this.state.color));
+		this.setHash(this.state.color);
+	},
+	setHash(val) {
+		// Convert any color to hex and update the hash without triggering the event handler.
+		this.update({ ignoreHashChange: true });
+
+		if (validate.hex(val)) {
+			window.location.hash = color.formatHex(val);
+		} else if (validate.rgb(val)) {
+			window.location.hash = color.rgbToHex(val);
+		} else if (validate.hsl(val)) {
+			window.location.hash = color.rgbToHex(color.hslToRGB(val));
+		} else {
+			this.update({ ignoreHashChange: false });
+		}
+	}
+});

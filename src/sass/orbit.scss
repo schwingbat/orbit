@@ -62,6 +62,18 @@ body {
         .knob.active {
             border-color: #fff;
         }
+
+        .download-swatch {
+            color: #fff;
+        }
+
+        .dl-icon-1,
+        .dl-icon-3 {
+            background-color: #fff;
+        }
+        .dl-icon-2 {
+            border-top-color: #fff;
+        }
     }
 }
 
@@ -297,4 +309,93 @@ $largewheel: 400px;
         float: left;
         font-weight: bold;
     }
+}
+
+/************************
+ Color Swatch Downloader
+************************/
+
+.download-swatch {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    border: 1px solid;
+    padding: 0.3em;
+
+    display: flex;
+    align-items: center;
+
+    color: #000;
+    text-decoration: none;
+    border-radius: 9999px;
+
+    @media (min-width: $medium) {
+         padding: 0.3em 0.6em;
+    }
+
+    &:hover {
+        .dl-icon-1,
+        .dl-icon-2 {
+            transform: translateY(3px);
+        }
+    }
+}
+
+.download-swatch-label {
+    display: none;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    font-weight: bold;
+
+    @media (min-width: $medium) {
+        display: inline-block;
+        margin-left: 0.4em;
+        margin-right: 0.2em;
+    }
+}
+
+.download-swatch-icon {
+    width: 32px;
+    height: 32px;
+    position: relative;
+}
+
+.dl-icon-piece {
+    position: absolute;
+    background-color: #000;
+}
+
+.dl-icon-1 { // Arrow shaft
+    width: 2px;
+    height: 12px;
+    border-radius: 2px;
+    left: 15px;
+    top: 4px;
+
+    transition: transform 200ms;
+}
+
+$arrow-size: 6px;
+
+.dl-icon-2 { // Arrow head
+    background-color: transparent;
+    left: 7px;
+    top: 14px;
+
+    width: 0;
+    height: 0;
+   
+    border-left: $arrow-size * 1.5 solid transparent;
+    border-right: $arrow-size * 1.5 solid transparent;
+    border-top: $arrow-size solid #000;
+
+    transition: transform 200ms;
+}
+
+.dl-icon-3 { // Base line
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    left: 7px;
+    top: 24px;
 }
