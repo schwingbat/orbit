@@ -17,7 +17,7 @@ module.exports = function swatchify(color, scale = 1) {
 	* 3. Return image data as base64
 	*/
 
-	const width = canvas.width = 400 * scale;
+	const width = canvas.width = 640 * scale;
 	const height = canvas.height = 200 * scale;
 
 	// Solid White BG
@@ -25,11 +25,11 @@ module.exports = function swatchify(color, scale = 1) {
 	c.fillRect(0, 0, width, height);
 
 	// Circular Swatch
-	const swatchMargin = 10 * scale;
+	const swatchMargin = 45 * scale;
 	const swatchSize = height - swatchMargin;
 
 	c.fillStyle = color.hex;
-	c.arc(height / 2, height / 2, swatchSize, 0, 360, false);
+	c.arc(height / 2, height / 2, swatchSize / 2, 0, 360, false);
 	c.fill();
 
 	// Color Text
@@ -38,18 +38,19 @@ module.exports = function swatchify(color, scale = 1) {
 	c.textBaseline = 'middle';
 
 	// Labels
-	c.font = `bold ${48 * scale}px ${fontStack}`;
+	c.font = `bold ${42 * scale}px ${fontStack}`;
 
-	c.fillText('HSL', textMargin, height / 4);
-	c.fillText('RGB', textMargin, height / 2);
-	c.fillText('HEX', textMargin, height / 4 * 3);
+	c.fillText('HSL', textMargin, height / 4.5);
+	c.fillText('HEX', textMargin, height / 2);
+	c.fillText('RGB', textMargin, height / 4.5 * 3.5);
 
 	// Values
-	c.font = `${48 * scale}px ${fontStack}`;
+	const labelOffset = 110 * scale;
+	c.font = `${42 * scale}px ${fontStack}`;
 
-	c.fillText(color.hsl, textMargin, height / 4);
-	c.fillText(color.rgb, textMargin, height / 2);
-	c.fillText(color.hex, textMargin, height / 4 * 3);
+	c.fillText(color.hsl, textMargin + labelOffset, height / 4.5);
+	c.fillText(color.hex, textMargin + labelOffset, height / 2);
+	c.fillText(color.rgb, textMargin + labelOffset, height / 4.5 * 3.5);
 
 	// Return as image data
 	return canvas.toDataURL('image/png');
