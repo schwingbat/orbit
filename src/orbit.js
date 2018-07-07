@@ -326,7 +326,7 @@ const Formats = new Component({
 });
 
 const Orbit = new Component({
-	anchor: document.querySelector('#app'),
+	anchor: document.querySelector('main'),
 	state: {
 		isLight: true,
 		color: { h: 1, s: 0, l: 0.5 },
