@@ -397,6 +397,7 @@ const Orbit = new Component({
 	},
 	updaters: {
 		isLight: function(val) {
+			console.log(this, this.anchor)
 			this.anchor.classList[val ? 'remove' : 'add']('dark');
 		},
 		color: function(hsl) {
