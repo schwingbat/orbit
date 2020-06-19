@@ -1,102 +1,120 @@
 $trans-speed: 0.2s;
 $medium: 550px;
 $large: 800px;
-$font-stack: -apple-system, BlinkMacSystemFont, 
-    "Segoe UI", "Roboto", "Oxygen", 
-    "Ubuntu", "Cantarell", "Fira Sans", 
-    "Droid Sans", "Helvetica Neue", sans-serif;
+$font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+  "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
 *,
 *:before,
 *:after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box; 
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* Utility Classes */
-.disabled { user-select: none; }
-.no-transition { transition: none !important; }
-.not-rendered { display: none; }
+.disabled {
+  user-select: none;
+}
+.no-transition {
+  transition: none !important;
+}
+.not-rendered {
+  display: none;
+}
 
 .label {
-    user-select: none;
-    pointer-events: none;
+  user-select: none;
+  pointer-events: none;
 }
 
 body {
-    font-family: $font-stack;
-    font-size: 16px;
+  font-family: $font-stack;
+  font-size: 16px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+main {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #app {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 
-    overflow-x: hidden;
-    overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    &.dark {
-        color:#fff;
-        border-color: #fff;
+  &.dark {
+    color: #fff;
+    border-color: #fff;
 
-        .result {
-            color: #fff;
-            border-color: #fff;
-        }
-
-        .slider-track,
-        .knob {
-            background: #fff;
-        }
-
-        .handle.active { border-color: #fff; }
-
-        .knob.active {
-            border-color: #fff;
-        }
-
-        .download-swatch {
-            color: #fff;
-        }
-
-        .dl-icon-1,
-        .dl-icon-3 {
-            background-color: #fff;
-        }
-        .dl-icon-2 {
-            border-top-color: #fff;
-        }
+    .result {
+      color: #fff;
+      border-color: #fff;
     }
+
+    .slider-track,
+    .knob {
+      background: #fff;
+    }
+
+    .handle.active {
+      border-color: #fff;
+    }
+
+    .knob.active {
+      border-color: #fff;
+    }
+
+    .download-swatch {
+      color: #fff;
+    }
+
+    .dl-icon-1,
+    .dl-icon-3 {
+      background-color: #fff;
+    }
+    .dl-icon-2 {
+      border-top-color: #fff;
+    }
+  }
 }
 
 .controls-container {
-    padding-top: 10px;
-    margin: auto;
+  padding-top: 10px;
+  margin: auto;
 
-    border-color: inherit;
-    position: relative; 
+  border-color: inherit;
+  position: relative;
 
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 
-    @media (min-width: $medium) {
-        flex-direction: row;
-        max-width: 550px;
-    }
+  @media (min-width: $medium) {
+    flex-direction: row;
+    max-width: 550px;
+  }
 
-    @media (min-width: $large) {
-        max-width: 720px;
-    }
+  @media (min-width: $large) {
+    max-width: 720px;
+  }
 }
 
 /************************
@@ -109,135 +127,136 @@ $largewheel: 400px;
 /* Outer Wheel */
 
 #wheel {
+  border-radius: 50%;
+  width: $wheel;
+  height: $wheel;
+
+  flex: 0 0 $wheel;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: $large) {
+    width: $largewheel;
+    height: $largewheel;
+    flex: 0 0 $largewheel;
+  }
+
+  .hue-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
     border-radius: 50%;
-    width: $wheel;
-    height: $wheel;
+    border: 1px solid;
+    border-color: inherit;
+    // transition: $trans-speed;
 
-    flex: 0 0 $wheel;
+    margin: 19px;
 
-    position: relative;
+    // @media (min-width: $large) {
+    //     margin: 14px;
+    // }
+  }
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .wheel-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    //transition: transform $trans-speed;
 
-    @media (min-width: $large) {
-        width: $largewheel;
-        height: $largewheel;
-        flex: 0 0 $largewheel;
+    .knob {
+      margin: 0 auto;
+      top: 0;
     }
-
-    .hue-guide {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        border-radius: 50%;
-        border: 1px solid;
-        border-color: inherit;
-        // transition: $trans-speed;
-
-        margin: 19px;
-    
-        // @media (min-width: $large) {
-        //     margin: 14px;
-        // }
-    }
-
-    .wheel-track {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%;
-        height: 100%;
-        //transition: transform $trans-speed;
-
-        .knob {
-            margin: 0 auto;
-            top: 0;
-        }
-    }
+  }
 }
 
 #color-wheel {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+  position: absolute;
+  width: 100%;
+  height: 100%;
 
-    transition: 0.4s;
-    transform: scale(0.5);
-    opacity: 0;
-    pointer-events: none;
+  transition: 0.4s;
+  transform: scale(0.5);
+  opacity: 0;
+  pointer-events: none;
 
-    &.active {
-        opacity: 1;
-        transform: scale(1.5);
-    }
+  &.active {
+    opacity: 1;
+    transform: scale(1.5);
+  }
 }
 
 .knob {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    background-color: #000;
-    cursor: grab;
-    pointer-events: all;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background-color: #000;
+  cursor: grab;
+  pointer-events: all;
 
-    &.active {
-        border-color: #000;
-    }
+  &.active {
+    border-color: #000;
+  }
 
-    // @media (min-width: $large) {
-    //     width: 30px;
-    //     height: 30px;
-    // }
+  // @media (min-width: $large) {
+  //     width: 30px;
+  //     height: 30px;
+  // }
 }
 
 /* Saturation and Lightness Sliders */
 
 .properties {
-    list-style: none;
-    flex: 0 0 50%;
+  list-style: none;
+  flex: 0 0 50%;
+  border-color: inherit;
+
+  li {
+    margin-bottom: 35px;
+    position: relative;
     border-color: inherit;
 
-    li {
-        margin-bottom: 35px;
-        position: relative;
-        border-color: inherit;
-
-        @media (min-width: $large) {
-            margin-bottom: 42px;
-        }
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-
-        .label {
-            display: block;
-            color: inherit;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .slider-track {
-            width: 100%;
-            height: 1px;
-            background: #000;
-            display: block;
-            margin: 24px 0;
-
-            @media (min-width: $large) {
-                margin: 30px 0;
-            }
-
-            .knob {
-                display: inline-block;
-                transform: translate(-50%, -50%);
-            }
-        }
+    @media (min-width: $large) {
+      margin-bottom: 42px;
     }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .label {
+      display: block;
+      color: inherit;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .slider-track {
+      width: 100%;
+      height: 1px;
+      background: #000;
+      display: block;
+      margin: 24px 0;
+
+      @media (min-width: $large) {
+        margin: 30px 0;
+      }
+
+      .knob {
+        display: inline-block;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
 }
 
 /************************
@@ -245,70 +264,72 @@ $largewheel: 400px;
 ************************/
 
 .formats {
-    list-style: none;
-    width: 280px;
-    margin: 15px auto 0 auto;
-    padding-bottom: 8%;
+  list-style: none;
+  width: 280px;
+  margin: 15px auto 0 auto;
+  padding-bottom: 8%;
 
-    @media (min-width: $medium) {
-        margin: auto 14px auto 1em;
-        width: 205px;
-        padding-bottom: 0;
+  @media (min-width: $medium) {
+    margin: auto 14px auto 1em;
+    width: 205px;
+    padding-bottom: 0;
+  }
+
+  @media (min-width: $large) {
+    margin: auto 14px auto 2em;
+    width: 250px;
+  }
+
+  .invalid {
+    background: transparentize(red, 0.5);
+  }
+
+  li {
+    border: 1px solid;
+    border-radius: 9999px;
+    padding: 0.8em 1.6em;
+    width: 100%;
+    // transition: $trans-speed;
+    text-align: right;
+    margin-bottom: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    position: relative;
+
+    color: inherit;
+    border-color: inherit;
+
+    &:last-child {
+      margin-bottom: 0;
     }
 
-    @media (min-width: $large) {
-        margin: auto 14px auto 2em;
-        width: 250px;
+    .result {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 1em;
+      text-align: right;
+      font-family: $font-stack;
+      width: 70%;
+      padding: 0.2em 0;
+
+      border-radius: 0;
+
+      border-bottom: 1px solid #000;
+
+      pointer-events: all;
+
+      color: #000;
     }
+  }
 
-    .invalid {
-        background: transparentize(red, 0.5);
-    }
-
-    li {
-        border: 1px solid;
-        border-radius: 9999px;
-        padding: 0.8em 1.6em;
-        width: 100%;
-        // transition: $trans-speed;
-        text-align: right;
-        margin-bottom: 12px;
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        position: relative;
-
-        color: inherit;
-        border-color: inherit;
-
-        &:last-child { margin-bottom: 0; }
-
-        .result {
-            border: none;
-            outline: none;
-            background: transparent;
-            font-size: 1em;
-            text-align: right;
-            font-family: $font-stack;
-            width: 70%;
-            padding: 0.2em 0;
-
-            border-radius: 0;
-
-            border-bottom: 1px solid #000;
-
-            pointer-events: all;
-
-            color: #000;
-        }
-    }
-
-    .label {
-        float: left;
-        font-weight: bold;
-    }
+  .label {
+    float: left;
+    font-weight: bold;
+  }
 }
 
 /************************
@@ -316,86 +337,89 @@ $largewheel: 400px;
 ************************/
 
 .download-swatch {
-    position: absolute;
-    top: 1em;
-    right: 1em;
-    border: 1px solid;
-    padding: 0.3em;
+  position: absolute;
+  top: 1em;
+  right: 1em;
+  border: 1px solid;
+  padding: 0.3em;
 
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 
-    color: #000;
-    text-decoration: none;
-    border-radius: 9999px;
+  color: #000;
+  text-decoration: none;
+  border-radius: 9999px;
 
-    @media (min-width: $medium) {
-         padding: 0.3em 0.6em;
+  @media (min-width: $medium) {
+    padding: 0.3em 0.6em;
+  }
+
+  &:hover {
+    .dl-icon-1,
+    .dl-icon-2 {
+      transform: translateY(3px);
     }
-
-    &:hover {
-        .dl-icon-1,
-        .dl-icon-2 {
-            transform: translateY(3px);
-        }
-    }
+  }
 }
 
 .download-swatch-label {
-    display: none;
-    font-size: 0.8em;
-    text-transform: uppercase;
-    font-weight: bold;
+  display: none;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  font-weight: bold;
 
-    @media (min-width: $medium) {
-        display: inline-block;
-        margin-left: 0.4em;
-        margin-right: 0.2em;
-    }
+  @media (min-width: $medium) {
+    display: inline-block;
+    margin-left: 0.4em;
+    margin-right: 0.2em;
+  }
 }
 
 .download-swatch-icon {
-    width: 32px;
-    height: 32px;
-    position: relative;
+  width: 32px;
+  height: 32px;
+  position: relative;
 }
 
 .dl-icon-piece {
-    position: absolute;
-    background-color: #000;
+  position: absolute;
+  background-color: #000;
 }
 
-.dl-icon-1 { // Arrow shaft
-    width: 2px;
-    height: 12px;
-    border-radius: 2px;
-    left: 15px;
-    top: 4px;
+.dl-icon-1 {
+  // Arrow shaft
+  width: 2px;
+  height: 12px;
+  border-radius: 2px;
+  left: 15px;
+  top: 4px;
 
-    transition: transform 200ms;
+  transition: transform 200ms;
 }
 
 $arrow-size: 6px;
 
-.dl-icon-2 { // Arrow head
-    background-color: transparent;
-    left: 7px;
-    top: 14px;
+.dl-icon-2 {
+  // Arrow head
+  background-color: transparent;
+  left: 7px;
+  top: 14px;
 
-    width: 0;
-    height: 0;
-   
-    border-left: $arrow-size * 1.5 solid transparent;
-    border-right: $arrow-size * 1.5 solid transparent;
-    border-top: $arrow-size solid #000;
+  width: 0;
+  height: 0;
 
-    transition: transform 200ms;
+  border-left: $arrow-size * 1.5 solid transparent;
+  border-right: $arrow-size * 1.5 solid transparent;
+  border-top: $arrow-size solid #000;
+
+  transition: transform 200ms;
 }
 
-.dl-icon-3 { // Base line
-    width: 18px;
-    height: 2px;
-    border-radius: 2px;
-    left: 7px;
-    top: 24px;
+.dl-icon-3 {
+  // Base line
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  left: 7px;
+  top: 24px;
 }

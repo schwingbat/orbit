@@ -5,7 +5,8 @@
   "main": "index.html",
   "private": true,
   "scripts": {
-    "pack": "webpack",
+    "build": "node scripts/copy && node scripts/sass && webpack",
+    "clean": "rm -rf build",
     "serve": "webpack-dev-server --content-base build/",
     "start": "node index.js",
     "deploy": "rsync -aP --delete build/ root@178.128.130.85:/var/www/orbit.tonymccoy.me"
@@ -14,23 +15,15 @@
   "license": "MIT",
   "dependencies": {
     "@schwingbat/component": "0.0.2",
-    "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1",
-    "del": "^3.0.0",
-    "express": "^4.16.3",
-    "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^5.0.0",
-    "gulp-babel": "^7.0.1",
-    "gulp-clean": "^0.4.0",
-    "gulp-sass": "^4.0.1",
-    "gulp-uglify": "^3.0.0",
-    "webpack-dev-server": "^3.1.4",
-    "webpack-stream": "^5.0.0"
+    "fs-extra": "^9.0.1",
+    "node-sass": "^4.14.1",
+    "webpack": "^4.43.0",
+    "webpack-dev-server": "^3.11.0"
   },
   "engines": {
     "node": "10.6.0"
   },
   "devDependencies": {
-    "webpack-command": "^0.4.1"
+    "webpack-command": "^0.5.0"
   }
 }
