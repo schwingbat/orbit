@@ -16,7 +16,7 @@
   "dependencies": {
     "@schwingbat/component": "0.0.2",
     "fs-extra": "^9.0.1",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.0",
     "webpack": "^4.43.0",
     "webpack-dev-server": "^3.11.0"
   },
