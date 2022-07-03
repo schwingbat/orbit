@@ -4,26 +4,18 @@
   "description": "An elegant, simple JavaScript color picker app.",
   "main": "index.html",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "node scripts/copy && node scripts/sass && webpack",
-    "clean": "rm -rf build",
-    "serve": "webpack-dev-server --content-base build/",
-    "start": "node index.js",
+    "start": "woof-build -c src/orbit.jsx -o build --watch",
+    "build": "woof-build -c src/orbit.jsx -o build --minify",
+    "view": "woof-view start src",
     "deploy": "rsync -aP --delete build/ root@178.128.130.85:/var/www/orbit.tonymccoy.me"
   },
   "author": "Tony McCoy <tony@ratwizard.io>",
   "license": "MIT",
   "dependencies": {
-    "@schwingbat/component": "0.0.2",
-    "fs-extra": "^9.0.1",
-    "node-sass": "^4.14.1",
-    "webpack": "^4.43.0",
-    "webpack-dev-server": "^3.11.0"
-  },
-  "engines": {
-    "node": "10.6.0"
-  },
-  "devDependencies": {
-    "webpack-command": "^0.5.0"
+    "@woofjs/build": "^0.3.2",
+    "@woofjs/client": "^0.13.0",
+    "@woofjs/view": "^0.2.1"
   }
 }
