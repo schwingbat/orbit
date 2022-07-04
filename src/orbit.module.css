@@ -20,7 +20,14 @@
 
 .controls {
   display: flex;
+  flex-flow: column nowrap;
   align-items: center;
   justify-content: center;
   flex: 1 1 100%;
+}
+
+@media (min-width: 769px) {
+  .controls {
+    flex-direction: row;
+  }
 }

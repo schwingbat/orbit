@@ -1,5 +1,5 @@
 .wheel {
-  --wheel-size: 400px;
+  --wheel-size: 350px;
 
   display: flex;
   align-items: center;
@@ -29,4 +29,10 @@
 
 .slider:not(:last-child) {
   margin-bottom: 2rem;
+}
+
+@media (min-width: 769px) {
+  .wheel {
+    --wheel-size: 400px;
+  }
 }

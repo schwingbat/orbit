@@ -1,4 +1,4 @@
-import { makeState, mergeStates } from "@woofjs/client";
+import { mergeStates } from "@woofjs/client";
 
 import styles from "./Wheel.module.css";
 

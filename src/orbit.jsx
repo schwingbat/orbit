@@ -1,5 +1,7 @@
 import { makeApp, mergeStates } from "@woofjs/client";
 import { hslToRGB, rgbToHex, hexToRGB, rgbToHSL } from "utils/convert";
+import { validateHex } from "utils/validate";
+import { makeDebouncer } from "utils/makeDebouncer";
 
 import "./styles/global.css";
 import styles from "./orbit.module.css";
@@ -9,7 +11,6 @@ import color from "./services/color";
 import DownloadSwatch from "./components/DownloadSwatch";
 import Formats from "./components/Formats";
 import Wheel from "./components/Wheel";
-import { validateHex } from "utils/validate";
 
 const app = makeApp();
 
@@ -24,11 +25,15 @@ app.route("*", ($attrs, self) => {
     return rgbToHex(hslToRGB({ h, s, l }));
   });
 
+  const debouncer = makeDebouncer(50, true);
+
   self.watchState(
     $hex,
     (hex) => {
-      ignoreHashChange = true;
-      window.location.hash = hex;
+      debouncer.queue(() => {
+        ignoreHashChange = true;
+        window.location.hash = hex;
+      });
     },
     { immediate: false }
   );

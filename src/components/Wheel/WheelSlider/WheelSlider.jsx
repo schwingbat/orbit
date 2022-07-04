@@ -1,17 +1,17 @@
-import { makeState as $, mergeStates } from "@woofjs/client";
+import { makeState, mergeStates } from "@woofjs/client";
 
 import styles from "./WheelSlider.module.css";
 import colorsImage from "./colors.png";
 
 export function WheelSlider($attrs, self) {
-  self.debug.name = "WheelSlider";
-
-  const { $isDark } = self.getService("color");
+  self.debug.name = "Wheel:Hue";
 
   const $value = $attrs.get("$value");
   const $activeKnobColor = $attrs.map("activeKnobColor");
 
-  const $interacting = $(false);
+  const { $isDark } = self.getService("color");
+
+  const $interacting = makeState(false);
   const $wheelColor = $isDark.map((dark) => (dark ? "#fff" : "#000"));
   const $knobColor = mergeStates(
     $interacting,
@@ -26,7 +26,7 @@ export function WheelSlider($attrs, self) {
     }
   );
 
-  const $trackRef = $();
+  const $trackRef = makeState();
 
   self.watchState($value, (value) => {
     self.debug.log("value", value);

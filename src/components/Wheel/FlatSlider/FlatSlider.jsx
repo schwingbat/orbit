@@ -1,4 +1,4 @@
-import { makeState as $, mergeStates } from "@woofjs/client";
+import { makeState, mergeStates, bind } from "@woofjs/client";
 
 import styles from "./FlatSlider.module.css";
 
@@ -9,7 +9,7 @@ export function FlatSlider($attrs, self) {
   const $value = $attrs.get("$value");
   const $activeKnobColor = $attrs.map("activeKnobColor");
 
-  const $interacting = $(false);
+  const $interacting = makeState(false);
   const $trackColor = $isDark.map((dark) => (dark ? "#fff" : "#000"));
   const $knobColor = mergeStates(
     $interacting,
@@ -26,13 +26,13 @@ export function FlatSlider($attrs, self) {
 
   self.debug.name = `Slider:${label}`;
 
-  // self.watchState($value, (value) => {
-  //   self.debug.log("value", value);
-  // });
+  self.watchState($value, (value) => {
+    self.debug.log("value", value);
+  });
 
-  // self.watchState($changing, (changing) => {
-  //   self.debug.log("changing", changing);
-  // });
+  self.watchState($interacting, (value) => {
+    self.debug.log("interacting", value);
+  });
 
   function onInteractStart(e) {
     $interacting.set(true);
@@ -70,12 +70,9 @@ export function FlatSlider($attrs, self) {
         min={0}
         max={1}
         step={0.0001}
-        value={$value}
+        value={bind($value)}
         onmousedown={onInteractStart}
         ontouchstart={onInteractStart}
-        oninput={(e) => {
-          $value.set(Number(e.target.value));
-        }}
       />
     </div>
   );
