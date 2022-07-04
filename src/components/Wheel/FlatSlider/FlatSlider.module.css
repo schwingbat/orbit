@@ -1,8 +1,67 @@
+.container {
+  --track-color: #000;
+  --knob-color: #000;
+
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+}
+
 .label {
+  color: var(--track-color);
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9em;
 }
 
-.track {
+.input {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 40px;
+  width: 100%;
+  background-color: transparent;
+  cursor: grab;
 }
 
-.knob {
+.input.active {
+  cursor: grabbing;
+}
+
+.input::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 1px;
+  background-color: var(--track-color);
+}
+
+.input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 40px;
+  height: 40px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background-color: var(--knob-color);
+  margin-top: -20px;
+}
+
+.input.active::-webkit-slider-thumb {
+  border-color: var(--track-color);
+}
+
+.input::-moz-range-track {
+  width: 100%;
+  height: 1px;
+  background-color: var(--track-color);
+}
+
+.input::-moz-range-thumb {
+  width: 40px;
+  height: 40px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background-color: var(--knob-color);
+}
+
+.input.active::-moz-range-thumb {
+  border-color: var(--track-color);
 }

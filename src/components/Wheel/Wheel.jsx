@@ -1,38 +1,45 @@
-import { makeState } from "@woofjs/client";
+import { makeState, mergeStates } from "@woofjs/client";
 
 import styles from "./Wheel.module.css";
-import colors from "./colors.png";
 
 import FlatSlider from "./FlatSlider";
 import WheelSlider from "./WheelSlider";
 
 export function Wheel($attrs, self) {
-  const $hue = makeState(1);
-  const $saturation = makeState(0.5);
-  const $lightness = makeState(0.7);
-
-  const $changingHue = makeState(false);
-  const $changingSat = makeState(false);
-  const $changingLight = makeState(false);
+  const { $hue, $saturation, $lightness } = self.getService("color");
 
   return (
     <div class={styles.wheel}>
-      <img src={colors} class={styles.colors} />
-      <div class={styles.hueGuide} />
-
-      <WheelSlider $value={$hue} $changing={$changingHue} />
-
-      <div class={styles.properties}>
-        <FlatSlider
-          label="Saturation"
-          $value={$saturation}
-          $changing={$changingSat}
+      <div class={styles.hue}>
+        <WheelSlider
+          $value={$hue}
+          activeKnobColor={$hue.map((h) => `hsl(${h * 360}, 100%, 50%)`)}
         />
-        <FlatSlider
-          label="Lightness"
-          $value={$lightness}
-          $changing={$changingLight}
-        />
+      </div>
+
+      <div class={styles.satAndLight}>
+        <div class={styles.slider}>
+          <FlatSlider
+            label="Saturation"
+            $value={$saturation}
+            activeKnobColor={mergeStates(
+              $hue,
+              $saturation,
+              (h, s) => `hsl(${h * 360}, ${s * 100}%, 50%)`
+            )}
+          />
+        </div>
+        <div class={styles.slider}>
+          <FlatSlider
+            label="Lightness"
+            $value={$lightness}
+            activeKnobColor={mergeStates(
+              $hue,
+              $lightness,
+              (h, l) => `hsl(${h * 360}, 0%, ${l * 100}%)`
+            )}
+          />
+        </div>
       </div>
     </div>
   );

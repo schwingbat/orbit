@@ -1,9 +1,28 @@
+import { makeState as $, mergeStates } from "@woofjs/client";
+
 import styles from "./FlatSlider.module.css";
 
 export function FlatSlider($attrs, self) {
+  const { $isDark } = self.getService("color");
+
   const label = $attrs.get("label");
   const $value = $attrs.get("$value");
-  const $changing = $attrs.get("$changing");
+  const $activeKnobColor = $attrs.map("activeKnobColor");
+
+  const $interacting = $(false);
+  const $trackColor = $isDark.map((dark) => (dark ? "#fff" : "#000"));
+  const $knobColor = mergeStates(
+    $interacting,
+    $trackColor,
+    $activeKnobColor,
+    (interacting, wheelColor, activeKnobColor) => {
+      if (interacting) {
+        return activeKnobColor;
+      } else {
+        return wheelColor;
+      }
+    }
+  );
 
   self.debug.name = `Slider:${label}`;
 
@@ -15,8 +34,12 @@ export function FlatSlider($attrs, self) {
   //   self.debug.log("changing", changing);
   // });
 
+  function onInteractStart(e) {
+    $interacting.set(true);
+  }
+
   function onInteractEnd() {
-    $changing.set(false);
+    $interacting.set(false);
   }
 
   self.afterConnect(() => {
@@ -30,21 +53,26 @@ export function FlatSlider($attrs, self) {
   });
 
   return (
-    <div>
+    <div
+      class={styles.container}
+      style={{
+        "--track-color": $trackColor,
+        "--knob-color": $knobColor,
+      }}
+    >
       <span class={styles.label}>{label}</span>
       <input
-        class={styles.input}
+        class={{
+          [styles.input]: true,
+          [styles.active]: $interacting,
+        }}
         type="range"
         min={0}
         max={1}
         step={0.0001}
         value={$value}
-        onmousedown={() => {
-          $changing.set(true);
-        }}
-        ontouchstart={() => {
-          $changing.set(true);
-        }}
+        onmousedown={onInteractStart}
+        ontouchstart={onInteractStart}
         oninput={(e) => {
           $value.set(Number(e.target.value));
         }}

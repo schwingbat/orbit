@@ -1,0 +1,32 @@
+.wheel {
+  --wheel-size: 400px;
+
+  display: flex;
+  align-items: center;
+  position: relative;
+
+  width: var(--wheel-size);
+  height: var(--wheel-size);
+}
+
+.satAndLight {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.slider {
+  pointer-events: all;
+  width: 50%;
+}
+
+.slider:not(:last-child) {
+  margin-bottom: 2rem;
+}

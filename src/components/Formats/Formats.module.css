@@ -1,0 +1,52 @@
+.container {
+  --selected-color: #fff;
+  --control-color: #000;
+}
+
+.format {
+  padding: 0 1rem;
+  border: 1px solid var(--control-color);
+  border-radius: 999px;
+  color: var(--control-color);
+  line-height: 42px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.format.invalid {
+  border-style: dotted;
+}
+
+.format.focused {
+  outline: 2px solid var(--control-color);
+}
+
+.format:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.formatLabel {
+  font-size: 0.9em;
+  font-weight: bold;
+  width: 40px;
+  user-select: none;
+}
+
+.formatInput {
+  appearance: none;
+  border: none;
+  outline: none;
+  /* border-bottom: 1px solid var(--control-color); */
+  background-color: transparent;
+  color: var(--control-color);
+  font-family: inherit;
+  font-size: inherit;
+  width: 140px;
+  text-align: right;
+  line-height: 24px;
+}
+
+.formatInput::selection {
+  background-color: var(--control-color);
+  color: var(--selected-color);
+}

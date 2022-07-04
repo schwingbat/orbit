@@ -1,4 +1,4 @@
-export function hex(hex) {
+export function validateHex(hex) {
   if (hex[0] === "#") hex = hex.slice(1);
   if (hex.length !== 6 && hex.length !== 3) return false;
 
@@ -21,7 +21,7 @@ export function hex(hex) {
   return true;
 }
 
-exports.hsl = function (hsl) {
+export function validateHSL(hsl) {
   return (
     hsl.h <= 1 &&
     hsl.h >= 0 &&
@@ -30,9 +30,9 @@ exports.hsl = function (hsl) {
     hsl.l <= 1 &&
     hsl.l >= 0
   );
-};
+}
 
-exports.rgb = function (rgb) {
+export function validateRGB(rgb) {
   return (
     rgb.r <= 1 &&
     rgb.r >= 0 &&
@@ -41,4 +41,4 @@ exports.rgb = function (rgb) {
     rgb.b <= 1 &&
     rgb.b >= 0
   );
-};
+}

@@ -1,8 +1,73 @@
-.label {
+.container {
+  --wheel-color: #000;
+  --knob-color: var(--wheel-color);
+
+  width: var(--wheel-size);
+  height: var(--wheel-size);
+  position: relative;
+  flex: 0 0 var(--wheel-size);
+  pointer-events: none;
+}
+
+.colors {
+  position: absolute;
+  width: var(--wheel-size);
+  height: var(--wheel-size);
+  transform-origin: center center;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transition: opacity 0.4s, transform 0.4s;
+  transform: scale(0.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.colors.visible {
+  opacity: 1;
+  transform: scale(1.5);
 }
 
 .track {
+  position: absolute;
+  top: 19px;
+  left: 19px;
+  right: 19px;
+  bottom: 19px;
+  border: 1px solid var(--wheel-color);
+  border-radius: 50%;
+}
+
+/* Transparent layer that positions and rotates the knob. */
+.knobRotator {
+  position: absolute;
+  top: -19px;
+  right: -19px;
+  bottom: -19px;
+  left: -19px;
 }
 
 .knob {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background-color: var(--knob-color);
+  cursor: grab;
+  pointer-events: all;
+}
+
+.knob.active {
+  border-color: var(--wheel-color);
+  cursor: grabbing;
+}
+
+.input {
+  visibility: hidden;
+  position: absolute;
 }

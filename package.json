@@ -16,6 +16,6 @@
   "dependencies": {
     "@woofjs/build": "^0.3.2",
     "@woofjs/client": "^0.13.0",
-    "@woofjs/view": "^0.2.1"
+    "@woofjs/view": "^0.3.0"
   }
 }
