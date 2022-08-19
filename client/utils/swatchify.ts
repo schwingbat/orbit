@@ -5,12 +5,18 @@
  * color swatch with canvas.
  */
 
+type Colors = {
+  hex: string;
+  hsl: string;
+  rgb: string;
+};
+
 const fontStack =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif';
 
-export function swatchify(color, scale = 1) {
+export function swatchify(color: Colors, scale = 1) {
   const canvas = document.createElement("canvas");
-  const c = canvas.getContext("2d");
+  const c = canvas.getContext("2d")!;
 
   /*
    * 1. Paint a circular swatch

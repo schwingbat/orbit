@@ -1,4 +1,6 @@
-export function formatHex(hex, hashSymbol = false) {
+import { RGBColor, HSLColor } from "types/colors";
+
+export function formatHex(hex: string, hashSymbol = false) {
   if (hex[0] === "#") {
     hex = hex.slice(1);
   }
@@ -11,7 +13,7 @@ export function formatHex(hex, hashSymbol = false) {
   return (hashSymbol ? "#" + hex : hex).toUpperCase();
 }
 
-export function formatRGB(rgb, resolution = 0) {
+export function formatRGB(rgb: RGBColor, resolution = 0) {
   // Format a float-format RGB object as a displayable string.
 
   let str = "";
@@ -23,7 +25,7 @@ export function formatRGB(rgb, resolution = 0) {
   return str;
 }
 
-export function formatHSL(hsl, resolution = 0) {
+export function formatHSL(hsl: HSLColor, resolution = 0) {
   // Format a float-format HSL object as a displayable string.
 
   let str = "";
@@ -41,14 +43,14 @@ export function formatHSL(hsl, resolution = 0) {
 	as absolutely tiny as possible.
 */
 
-export function rgbToHSL(color) {
+export function rgbToHSL(color: RGBColor) {
   const { r, g, b } = color;
 
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
 
-  let h;
-  let s;
+  let h = 0;
+  let s = 0;
   const l = (max + min) / 2;
 
   if (max == min) {
@@ -75,7 +77,7 @@ export function rgbToHSL(color) {
   return { h, s, l };
 }
 
-export function hslToRGB(color) {
+export function hslToRGB(color: HSLColor) {
   const { h, s, l } = color;
 
   let r;
@@ -85,7 +87,7 @@ export function hslToRGB(color) {
   if (s == 0) {
     r = g = b = l;
   } else {
-    const hue2rgb = function hue2rgb(p, q, t) {
+    const hue2rgb = function hue2rgb(p: number, q: number, t: number) {
       if (t < 0) t += 1;
       if (t > 1) t -= 1;
       if (t < 1 / 6) return p + (q - p) * 6 * t;
@@ -104,7 +106,7 @@ export function hslToRGB(color) {
   return { r, g, b };
 }
 
-export function hexToRGB(hex) {
+export function hexToRGB(hex: string) {
   hex = formatHex(hex);
 
   return {
@@ -114,7 +116,7 @@ export function hexToRGB(hex) {
   };
 }
 
-export function rgbToHex(color) {
+export function rgbToHex(color: RGBColor) {
   const r = pad2(decToHexString(color.r * 255));
   const g = pad2(decToHexString(color.g * 255));
   const b = pad2(decToHexString(color.b * 255));
@@ -125,15 +127,15 @@ export function rgbToHex(color) {
 // With a way to transform between HSL and RGB, I just need a way
 // to convert between hex and RGB and I have everything I need.
 
-function decToHexString(number) {
+function decToHexString(number: number) {
   if (number < 0) {
     number = 0xffffffff + number + 1;
   }
 
-  number = Math.round(number).toString(16);
-  return number === "100" ? "FF" : number;
+  const b16 = Math.round(number).toString(16);
+  return b16 === "100" ? "FF" : b16;
 }
 
-function pad2(c) {
+function pad2(c: string) {
   return c.length == 1 ? "0" + c : "" + c;
 }

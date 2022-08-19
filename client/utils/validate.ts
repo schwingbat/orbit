@@ -1,4 +1,6 @@
-export function validateHex(hex) {
+import { HSLColor, RGBColor } from "types/colors";
+
+export function validateHex(hex: string) {
   if (hex[0] === "#") hex = hex.slice(1);
   if (hex.length !== 6 && hex.length !== 3) return false;
 
@@ -21,7 +23,7 @@ export function validateHex(hex) {
   return true;
 }
 
-export function validateHSL(hsl) {
+export function validateHSL(hsl: HSLColor) {
   return (
     hsl.h <= 1 &&
     hsl.h >= 0 &&
@@ -32,7 +34,7 @@ export function validateHSL(hsl) {
   );
 }
 
-export function validateRGB(rgb) {
+export function validateRGB(rgb: RGBColor) {
   return (
     rgb.r <= 1 &&
     rgb.r >= 0 &&

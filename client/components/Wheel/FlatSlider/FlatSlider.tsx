@@ -1,40 +1,48 @@
-import { makeState, mergeStates, bind } from "@woofjs/client";
+import type { MutableState } from "@woofjs/client";
+
+import { makeComponent, makeState, mergeStates, bind } from "@woofjs/client";
+import { AppServices } from "app";
 
 import styles from "./FlatSlider.module.css";
 
-export function FlatSlider($attrs, self) {
-  const { $isDark } = self.getService("color");
+type FlatSliderAttrs = {
+  label: string;
+  $value: MutableState<number>;
+  activeKnobColor: string;
+};
 
-  const label = $attrs.get("label");
-  const $value = $attrs.get("$value");
-  const $activeKnobColor = $attrs.map("activeKnobColor");
+export const FlatSlider = makeComponent<FlatSliderAttrs, AppServices>((ctx) => {
+  const { $isDark } = ctx.services.color;
+
+  const label = ctx.$attrs.get((x) => x.label);
+  const $value = ctx.$attrs.get((x) => x.$value);
+  const $activeKnobColor = ctx.$attrs.map((x) => x.activeKnobColor);
 
   const $interacting = makeState(false);
   const $trackColor = $isDark.map((dark) => (dark ? "#fff" : "#000"));
   const $knobColor = mergeStates(
     $interacting,
     $trackColor,
-    $activeKnobColor,
-    (interacting, wheelColor, activeKnobColor) => {
-      if (interacting) {
-        return activeKnobColor;
-      } else {
-        return wheelColor;
-      }
+    $activeKnobColor
+  ).into((interacting, wheelColor, activeKnobColor) => {
+    if (interacting) {
+      return activeKnobColor;
+    } else {
+      return wheelColor;
     }
-  );
-
-  self.debug.name = `Slider:${label}`;
-
-  self.watchState($value, (value) => {
-    self.debug.log("value", value);
   });
 
-  self.watchState($interacting, (value) => {
-    self.debug.log("interacting", value);
+  ctx.debug.name = `Slider:${label}`;
+
+  ctx.subscribeTo($value, (value) => {
+    ctx.debug.log("value", value);
   });
 
-  function onInteractStart(e) {
+  ctx.subscribeTo($interacting, (value) => {
+    ctx.debug.log("interacting", value);
+  });
+
+  function onInteractStart(e: TouchEvent) {
     $interacting.set(true);
   }
 
@@ -42,12 +50,12 @@ export function FlatSlider($attrs, self) {
     $interacting.set(false);
   }
 
-  self.afterConnect(() => {
+  ctx.afterConnect(() => {
     window.addEventListener("mouseup", onInteractEnd);
     window.addEventListener("touchend", onInteractEnd);
   });
 
-  self.afterDisconnect(() => {
+  ctx.afterDisconnect(() => {
     window.removeEventListener("mouseup", onInteractEnd);
     window.removeEventListener("touchend", onInteractEnd);
   });
@@ -76,4 +84,4 @@ export function FlatSlider($attrs, self) {
       />
     </div>
   );
-}
+});

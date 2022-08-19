@@ -1,12 +1,14 @@
-import { mergeStates } from "@woofjs/client";
+import type { AppServices } from "app";
+
+import { makeComponent, mergeStates } from "@woofjs/client";
 
 import styles from "./Wheel.module.css";
 
 import FlatSlider from "./FlatSlider";
 import WheelSlider from "./WheelSlider";
 
-export function Wheel($attrs, self) {
-  const { $hue, $saturation, $lightness } = self.getService("color");
+export const Wheel = makeComponent<{}, AppServices>((ctx) => {
+  const { $hue, $saturation, $lightness } = ctx.services.color;
 
   return (
     <div class={styles.wheel}>
@@ -22,9 +24,7 @@ export function Wheel($attrs, self) {
           <FlatSlider
             label="Saturation"
             $value={$saturation}
-            activeKnobColor={mergeStates(
-              $hue,
-              $saturation,
+            activeKnobColor={mergeStates($hue, $saturation).into(
               (h, s) => `hsl(${h * 360}, ${s * 100}%, 50%)`
             )}
           />
@@ -33,9 +33,7 @@ export function Wheel($attrs, self) {
           <FlatSlider
             label="Lightness"
             $value={$lightness}
-            activeKnobColor={mergeStates(
-              $hue,
-              $lightness,
+            activeKnobColor={mergeStates($hue, $lightness).into(
               (h, l) => `hsl(${h * 360}, 0%, ${l * 100}%)`
             )}
           />
@@ -43,4 +41,4 @@ export function Wheel($attrs, self) {
       </div>
     </div>
   );
-}
+});

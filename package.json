@@ -6,16 +6,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "woof-build -c src/orbit.jsx -o build --watch",
-    "build": "woof-build -c src/orbit.jsx -o build --minify",
+    "start": "woof-build --watch",
+    "build": "woof-build --minify",
     "view": "woof-view start src",
     "deploy": "rsync -aP --delete build/ root@178.128.130.85:/var/www/orbit.tonymccoy.me"
   },
   "author": "Tony McCoy <tony@ratwizard.io>",
   "license": "MIT",
   "dependencies": {
-    "@woofjs/build": "^0.3.2",
-    "@woofjs/client": "^0.13.0",
-    "@woofjs/view": "^0.3.0"
+    "@woofjs/build": "^0.10.0",
+    "@woofjs/client": "^0.20.1",
+    "@woofjs/view": "^0.6.3"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.4",
+    "typescript-plugin-css-modules": "^3.4.0"
   }
 }

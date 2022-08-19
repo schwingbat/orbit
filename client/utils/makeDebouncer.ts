@@ -6,8 +6,8 @@
  * @param timeout - Number of milliseconds to wait before calling the queued function.
  * @param immediate - If true, run queued function right away if timeout has elapsed and nothing is pending.
  */
-export function makeDebouncer(timeout, immediate = false) {
-  let pending;
+export function makeDebouncer(timeout: number, immediate = false) {
+  let pending: number | undefined;
 
   return {
     /**
@@ -15,14 +15,14 @@ export function makeDebouncer(timeout, immediate = false) {
      *
      * @param fn - New pending function.
      */
-    queue(fn) {
+    queue(fn: (...args: any) => any) {
       const callNow = immediate && !pending;
 
       window.clearTimeout(pending);
 
       pending = window.setTimeout(() => {
         if (!callNow) fn();
-        pending = null;
+        pending = undefined;
       }, timeout);
 
       if (callNow) fn();
@@ -33,7 +33,7 @@ export function makeDebouncer(timeout, immediate = false) {
      */
     cancel() {
       window.clearTimeout(pending);
-      pending = null;
+      pending = undefined;
     },
   };
 }

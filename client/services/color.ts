@@ -1,7 +1,7 @@
-import { makeState } from "@woofjs/client";
+import { makeService, makeState } from "@woofjs/client";
 
-export default function ColorService(self) {
-  const defaultColor = self.options.defaultColor || { h: 1, s: 0.5, l: 0.7 };
+export default makeService(() => {
+  const defaultColor = { h: 1, s: 0.5, l: 0.7 };
 
   const $hue = makeState(defaultColor.h);
   const $saturation = makeState(defaultColor.s);
@@ -16,4 +16,4 @@ export default function ColorService(self) {
 
     $isDark,
   };
-}
+});

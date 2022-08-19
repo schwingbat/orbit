@@ -1,10 +1,10 @@
-import { makeApp, mergeStates } from "@woofjs/client";
-import { hslToRGB, rgbToHex, hexToRGB, rgbToHSL } from "utils/convert";
-import { validateHex } from "utils/validate";
-import { makeDebouncer } from "utils/makeDebouncer";
+import { makeApp, mergeStates, ServicesOf } from "@woofjs/client";
+import { hslToRGB, rgbToHex, hexToRGB, rgbToHSL } from "./utils/convert";
+import { validateHex } from "./utils/validate";
+import { makeDebouncer } from "./utils/makeDebouncer";
 
 import "./styles/global.css";
-import styles from "./orbit.module.css";
+import styles from "./app.module.css";
 
 import color from "./services/color";
 
@@ -12,31 +12,33 @@ import DownloadSwatch from "./components/DownloadSwatch";
 import Formats from "./components/Formats";
 import Wheel from "./components/Wheel";
 
-const app = makeApp();
+const app = makeApp({
+  services: {
+    color,
+  },
+});
 
-app.service("color", color);
+// Infer service types on app for components.
+export type AppServices = ServicesOf<typeof app>;
 
-app.route("*", ($attrs, self) => {
+app.route("*", (ctx) => {
   let ignoreHashChange = false;
 
-  const { $hue, $saturation, $lightness } = self.getService("color");
+  // NOTE: Services aren't
+  const { $hue, $saturation, $lightness } = ctx.services.color;
 
-  const $hex = mergeStates($hue, $saturation, $lightness, (h, s, l) => {
+  const $hex = mergeStates($hue, $saturation, $lightness).into((h, s, l) => {
     return rgbToHex(hslToRGB({ h, s, l }));
   });
 
   const debouncer = makeDebouncer(50, true);
 
-  self.watchState(
-    $hex,
-    (hex) => {
-      debouncer.queue(() => {
-        ignoreHashChange = true;
-        window.location.hash = hex;
-      });
-    },
-    { immediate: false }
-  );
+  ctx.subscribeTo($hex, (hex) => {
+    debouncer.queue(() => {
+      ignoreHashChange = true;
+      window.location.hash = hex;
+    });
+  });
 
   function onHashChange() {
     if (ignoreHashChange) {
@@ -55,12 +57,12 @@ app.route("*", ($attrs, self) => {
     }
   }
 
-  self.afterConnect(() => {
+  ctx.afterConnect(() => {
     onHashChange();
     window.addEventListener("hashchange", onHashChange);
   });
 
-  self.beforeDisconnect(() => {
+  ctx.beforeDisconnect(() => {
     window.removeEventListener("hashchange", onHashChange);
   });
 

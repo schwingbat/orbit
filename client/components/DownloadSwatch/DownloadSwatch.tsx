@@ -1,19 +1,21 @@
+import { makeComponent } from "@woofjs/client";
 import {
   formatHex,
   formatRGB,
   formatHSL,
   hslToRGB,
   rgbToHex,
-} from "utils/convert.js";
-import { swatchify } from "utils/swatchify.js";
+} from "utils/convert";
+import { swatchify } from "utils/swatchify";
+import { AppServices } from "app";
 
 import styles from "./DownloadSwatch.module.css";
 
 /**
  * A button that downloads a swatch PNG of the current color when clicked.
  */
-export function DownloadSwatch($attrs, self) {
-  const { $hue, $saturation, $lightness, $isDark } = self.getService("color");
+export const DownloadSwatch = makeComponent<{}, AppServices>((ctx) => {
+  const { $hue, $saturation, $lightness, $isDark } = ctx.services.color;
 
   /**
    * Generate a swatch image and download it with a temporary <a> tag.
@@ -58,4 +60,4 @@ export function DownloadSwatch($attrs, self) {
       Download Swatch
     </button>
   );
-}
+});

@@ -1,4 +1,8 @@
-import { bind, makeState, mergeStates } from "@woofjs/client";
+// import type {} from "@woofjs/client";
+import type { RGBColor, HSLColor } from "types/colors";
+import type { AppServices } from "app";
+
+import { bind, makeComponent, makeState, mergeStates } from "@woofjs/client";
 import {
   formatHex,
   formatHSL,
@@ -12,10 +16,10 @@ import { validateHex, validateHSL, validateRGB } from "utils/validate";
 
 import styles from "./Formats.module.css";
 
-export function Formats($attrs, self) {
-  const { $hue, $saturation, $lightness, $isDark } = self.getService("color");
+export const Formats = makeComponent<{}, AppServices>((ctx) => {
+  const { $hue, $saturation, $lightness, $isDark } = ctx.services.color;
 
-  const $hsl = mergeStates($hue, $saturation, $lightness, (h, s, l) => {
+  const $hsl = mergeStates($hue, $saturation, $lightness).into((h, s, l) => {
     return { h, s, l };
   });
   const $rgb = $hsl.map(hslToRGB);
@@ -25,7 +29,7 @@ export function Formats($attrs, self) {
   const $formattedRGB = $rgb.map(formatRGB);
   const $formattedHex = $hex.map((hex) => formatHex(hex, true));
 
-  const $triggeredBy = makeState(null);
+  const $triggeredBy = makeState<string>();
 
   return (
     <div
@@ -40,17 +44,15 @@ export function Formats($attrs, self) {
         value={$formattedHSL}
         ignoreValueUpdate={$triggeredBy.map((culprit) => culprit === "HSL")}
         parse={(value) => {
-          value = value
+          const [h, s, l] = value
             .replace("%", "")
             .split(",")
             .map((c) => parseInt(c));
 
-          value = { h: value[0] / 360, s: value[1] / 100, l: value[2] / 100 };
+          const hsl = { h: h / 360, s: s / 100, l: l / 100 };
 
-          if (validateHSL(value)) {
-            return value;
-          } else {
-            return false;
+          if (validateHSL(hsl)) {
+            return hsl;
           }
         }}
         onchange={(value) => {
@@ -69,8 +71,6 @@ export function Formats($attrs, self) {
         parse={(value) => {
           if (validateHex(value)) {
             return rgbToHSL(hexToRGB(value));
-          } else {
-            return false;
           }
         }}
         onchange={(value) => {
@@ -87,13 +87,15 @@ export function Formats($attrs, self) {
         value={$formattedRGB}
         ignoreValueUpdate={$triggeredBy.map((culprit) => culprit === "RGB")}
         parse={(value) => {
-          value = value.split(",").map((c) => parseInt(c));
-          value = { r: value[0] / 256, g: value[1] / 256, b: value[2] / 256 };
+          const numbers = value.split(",").map((c) => parseInt(c));
+          const rgb = {
+            r: numbers[0] / 256,
+            g: numbers[1] / 256,
+            b: numbers[2] / 256,
+          };
 
-          if (validateRGB(value)) {
-            return rgbToHSL(value);
-          } else {
-            return false;
+          if (validateRGB(rgb)) {
+            return rgbToHSL(rgb);
           }
         }}
         onchange={(value) => {
@@ -106,19 +108,27 @@ export function Formats($attrs, self) {
       />
     </div>
   );
-}
+});
 
-function FormatInput($attrs, self) {
-  const $value = $attrs.map("value");
-  const $ignoreValueUpdate = $attrs.map("ignoreValueUpdate");
-  const parse = $attrs.get("parse");
-  const onchange = $attrs.get("onchange");
+type FormatInputAttrs = {
+  label: string;
+  value: string; // TODO: @woofjs/client types don't accept a ReadonlyState<string> for this value, but they should.
+  ignoreValueUpdate: boolean;
+  parse: (value: string) => HSLColor | undefined;
+  onchange: (hsl: HSLColor) => void;
+};
+
+const FormatInput = makeComponent<FormatInputAttrs, AppServices>((ctx) => {
+  const $value = ctx.$attrs.map((x) => x.value);
+  const $ignoreValueUpdate = ctx.$attrs.map((x) => x.ignoreValueUpdate);
+  const parse = ctx.$attrs.get((x) => x.parse);
+  const onchange = ctx.$attrs.get((x) => x.onchange);
 
   const $focused = makeState(false);
   const $isValid = makeState(true);
   const $inputValue = makeState($value.get());
 
-  const $label = mergeStates($attrs, $isValid, (attrs, valid) => {
+  const $label = mergeStates(ctx.$attrs, $isValid).into((attrs, valid) => {
     if (valid) {
       return attrs.label;
     } else {
@@ -128,7 +138,7 @@ function FormatInput($attrs, self) {
 
   let ignoreChange = false;
 
-  self.watchState($inputValue, (value) => {
+  ctx.subscribeTo($inputValue, (value) => {
     const parsed = parse(value);
 
     if (parsed) {
@@ -145,7 +155,7 @@ function FormatInput($attrs, self) {
     }
   });
 
-  self.watchState($value, (value) => {
+  ctx.subscribeTo($value, (value) => {
     if ($ignoreValueUpdate.get()) {
       return;
     }
@@ -176,4 +186,4 @@ function FormatInput($attrs, self) {
       />
     </div>
   );
-}
+});
