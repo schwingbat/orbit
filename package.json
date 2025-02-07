@@ -6,20 +6,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "woof-build --watch",
-    "build": "woof-build --minify",
-    "view": "woof-view start src",
-    "deploy": "rsync -aP --delete build/ root@178.128.130.85:/var/www/orbit.tonymccoy.me"
+    "start": "vite",
+    "build": "NODE_ENV=production vite build",
+    "deploy": "rsync -aP --delete dist/ root@178.128.130.85:/var/www/orbit.tonymccoy.me/static"
   },
   "author": "Tony McCoy <tony@ratwizard.io>",
   "license": "MIT",
-  "dependencies": {
-    "@woofjs/build": "^0.10.0",
-    "@woofjs/client": "^0.20.1",
-    "@woofjs/view": "^0.6.3"
-  },
   "devDependencies": {
+    "@manyducks.co/dolla": "^2.0.0-alpha.30",
     "typescript": "^4.7.4",
-    "typescript-plugin-css-modules": "^3.4.0"
+    "typescript-plugin-css-modules": "^3.4.0",
+    "vite": "^6.1.0"
   }
 }
