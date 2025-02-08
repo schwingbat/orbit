@@ -1,6 +1,6 @@
 import Dolla, { createView } from "@manyducks.co/dolla";
 
-import { hexToRGB, rgbToHSL } from "./utils/convert";
+import { rgbFromHex, hslFromRGB } from "./utils/convert";
 import { makeDebouncer } from "./utils/makeDebouncer";
 import { validateHex } from "./utils/validate";
 
@@ -8,13 +8,13 @@ import styles from "./app.module.css";
 
 import { ColorStore } from "./stores/ColorStore";
 
-import DownloadSwatch from "./components/DownloadSwatch";
-import Formats from "./components/Formats";
+import { DownloadSwatch } from "./components/DownloadSwatch/DownloadSwatch";
+import { Formats } from "./components/Formats/Formats";
 import { Wheel } from "./components/Wheel/Wheel";
 
-Dolla.setEnv("development");
+const appElement = document.querySelector("#app")! as HTMLElement;
 
-Dolla.attachStore(ColorStore());
+Dolla.setEnv("development");
 
 Dolla.i18n.setup({
   locale: "auto",
@@ -39,6 +39,16 @@ Dolla.i18n.setup({
         };
       },
     },
+    {
+      locale: "es",
+      fetch: async () => {
+        return {
+          downloadSwatch: "Descargar muestra",
+          saturation: "Saturación",
+          lightness: "Luminosidad",
+        };
+      },
+    },
   ],
 });
 
@@ -47,7 +57,9 @@ const Orbit = createView(function () {
 
   let ignoreHashChange = false;
 
-  const { $hex } = this.useStore(ColorStore);
+  this.attachStore(ColorStore(window.location.hash));
+
+  const { $hex, patchHSL } = this.useStore(ColorStore);
 
   const debouncer = makeDebouncer(50, true);
 
@@ -69,14 +81,16 @@ const Orbit = createView(function () {
     this.log({ hash, valid: validateHex(hash) });
 
     if (validateHex(hash)) {
-      const hsl = rgbToHSL(hexToRGB(hash));
-      this.emit("hsl:patch", hsl);
+      const hsl = hslFromRGB(rgbFromHex(hash));
+      patchHSL(hsl);
     }
   };
 
   this.onMount(() => {
     onHashChange();
     window.addEventListener("hashchange", onHashChange);
+
+    appElement.classList.remove("loading");
   });
 
   this.onUnmount(() => {
@@ -96,19 +110,6 @@ const Orbit = createView(function () {
     </div>
   );
 });
-
-// TODO: This should work by just mounting the view directly, but we need a router or it throws an error.
-// Dolla.router.setup({
-//   hash: true,
-//   routes: [
-//     {
-//       path: "*",
-//       view: Orbit,
-//     },
-//   ],
-// });
-
-const appElement = document.querySelector("#app")! as HTMLElement;
 
 Dolla.watch([Dolla.i18n.$locale], (locale) => {
   Dolla.batch.write(() => {

@@ -43,7 +43,7 @@ export function formatHSL(hsl: HSLColor, resolution = 0) {
 	as absolutely tiny as possible.
 */
 
-export function rgbToHSL(color: RGBColor) {
+export function hslFromRGB(color: RGBColor) {
   const { r, g, b } = color;
 
   const max = Math.max(r, g, b);
@@ -77,7 +77,7 @@ export function rgbToHSL(color: RGBColor) {
   return { h, s, l };
 }
 
-export function hslToRGB(color: HSLColor) {
+export function rgbFromHSL(color: HSLColor) {
   const { h, s, l } = color;
 
   let r;
@@ -106,7 +106,7 @@ export function hslToRGB(color: HSLColor) {
   return { r, g, b };
 }
 
-export function hexToRGB(hex: string) {
+export function rgbFromHex(hex: string) {
   hex = formatHex(hex);
 
   return {
@@ -116,7 +116,7 @@ export function hexToRGB(hex: string) {
   };
 }
 
-export function rgbToHex(color: RGBColor) {
+export function hexFromRGB(color: RGBColor) {
   const r = pad2(decToHexString(color.r * 255));
   const g = pad2(decToHexString(color.g * 255));
   const b = pad2(decToHexString(color.b * 255));

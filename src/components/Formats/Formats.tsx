@@ -10,11 +10,17 @@ import {
   formatHex,
   formatHSL,
   formatRGB,
-  hexToRGB,
-  rgbToHSL,
+  rgbFromHex,
+  hslFromRGB,
 } from "../../utils/convert";
 import { validateHex, validateHSL, validateRGB } from "../../utils/validate";
 import styles from "./Formats.module.css";
+
+function is<T>(target: T) {
+  return function compare(value: any): value is T {
+    return target === value;
+  };
+}
 
 export const Formats = createView(function () {
   const { $hsl, $rgb, $hex, $isDark, patchHSL } = this.useStore(ColorStore);
@@ -39,7 +45,7 @@ export const Formats = createView(function () {
       <FormatInput
         label="HSL"
         $value={$formattedHSL}
-        $ignoreValueUpdate={derive([$trigger], (t) => t === "HSL")}
+        $ignoreValueUpdate={derive([$trigger], is("HSL"))}
         parse={(value) => {
           const [h, s, l] = value
             .replace("%", "")
@@ -61,10 +67,10 @@ export const Formats = createView(function () {
       <FormatInput
         label="HEX"
         $value={$formattedHex}
-        $ignoreValueUpdate={derive([$trigger], (t) => t === "HEX")}
+        $ignoreValueUpdate={derive([$trigger], is("HEX"))}
         parse={(value) => {
           if (validateHex(value)) {
-            return rgbToHSL(hexToRGB(value));
+            return hslFromRGB(rgbFromHex(value));
           }
         }}
         onChange={(value) => {
@@ -76,7 +82,7 @@ export const Formats = createView(function () {
       <FormatInput
         label="RGB"
         $value={$formattedRGB}
-        $ignoreValueUpdate={derive([$trigger], (t) => t === "RGB")}
+        $ignoreValueUpdate={derive([$trigger], is("RGB"))}
         parse={(value) => {
           const numbers = value.split(",").map((c) => parseInt(c));
           const rgb = {
@@ -86,7 +92,7 @@ export const Formats = createView(function () {
           };
 
           if (validateRGB(rgb)) {
-            return rgbToHSL(rgb);
+            return hslFromRGB(rgb);
           }
         }}
         onChange={(value) => {

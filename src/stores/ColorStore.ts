@@ -1,11 +1,24 @@
 import { createState, createStore, derive } from "@manyducks.co/dolla";
-import { hslToRGB, rgbToHex } from "../utils/convert";
+import {
+  rgbFromHex,
+  rgbFromHSL,
+  hexFromRGB,
+  hslFromRGB,
+} from "../utils/convert";
+import { validateHex } from "~/utils/validate";
+import { makeDebouncer } from "~/utils/makeDebouncer";
 
-export const ColorStore = createStore((_, ctx) => {
+const saveDebouncer = makeDebouncer(100);
+
+export const ColorStore = createStore(function (initialColorHex: string) {
   const [$hsl, setHSL] = createState({ h: 1, s: 0.5, l: 0.7 });
 
-  const $rgb = derive([$hsl], (hsl) => hslToRGB(hsl));
-  const $hex = derive([$rgb], (rgb) => rgbToHex(rgb));
+  if (initialColorHex && validateHex(initialColorHex)) {
+    setHSL(hslFromRGB(rgbFromHex(initialColorHex)));
+  }
+
+  const $rgb = derive([$hsl], (hsl) => rgbFromHSL(hsl));
+  const $hex = derive([$rgb], (rgb) => hexFromRGB(rgb));
 
   const $isDark = derive([$hsl], ({ l }) => l < 0.5);
 
@@ -19,8 +32,10 @@ export const ColorStore = createStore((_, ctx) => {
     });
   };
 
-  ctx.on("hsl:patch", (e) => {
-    patchHSL(e.detail as { h?: number; s?: number; l?: number });
+  this.watch([$hex], (hex) => {
+    saveDebouncer.queue(() => {
+      localStorage.setItem("latestColor", hex);
+    });
   });
 
   return {

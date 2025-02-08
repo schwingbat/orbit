@@ -14,7 +14,7 @@ export const DownloadSwatch = createView(function () {
   /**
    * Generate a swatch image and download it with a temporary <a> tag.
    */
-  function download() {
+  const download = () => {
     const colors = {
       hsl: formatHSL($hsl.get()),
       rgb: formatRGB($rgb.get()),
@@ -30,7 +30,7 @@ export const DownloadSwatch = createView(function () {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
+  };
 
   return (
     <button
