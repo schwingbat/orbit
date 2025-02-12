@@ -1,124 +1,150 @@
-import Dolla, { createView } from "@manyducks.co/dolla";
+import "preact/debug";
 
-import { rgbFromHex, hslFromRGB } from "./utils/convert";
+import { useSignalEffect } from "@preact/signals";
+import { render } from "preact";
+import { useEffect, useRef } from "preact/hooks";
+
+import { hslFromRGB, rgbFromHex } from "./utils/convert";
 import { makeDebouncer } from "./utils/makeDebouncer";
 import { validateHex } from "./utils/validate";
 
 import styles from "./app.module.css";
 
-import { ColorStore } from "./stores/ColorStore";
-
-import { DownloadSwatch } from "./components/DownloadSwatch/DownloadSwatch";
-import { Formats } from "./components/Formats/Formats";
+// import { DownloadSwatch } from "./components/DownloadSwatch/DownloadSwatch";
+// import { Formats } from "./components/Formats/Formats";
 import { Wheel } from "./components/Wheel/Wheel";
 
 const appElement = document.querySelector("#app")! as HTMLElement;
 
-Dolla.i18n.setup({
-  locale: "auto",
-  translations: [
-    {
-      locale: "en",
-      fetch: async () => {
-        return {
-          downloadSwatch: "Download Swatch",
-          saturation: "Saturation",
-          lightness: "Lightness",
-        };
-      },
-    },
-    {
-      locale: "ja",
-      fetch: async () => {
-        return {
-          downloadSwatch: "見本をダウンロード",
-          saturation: "彩度",
-          lightness: "明度",
-        };
-      },
-    },
-    {
-      locale: "es",
-      fetch: async () => {
-        return {
-          downloadSwatch: "Descargar muestra",
-          saturation: "Saturación",
-          lightness: "Luminosidad",
-        };
-      },
-    },
-  ],
-});
+const debouncer = makeDebouncer(50, true);
 
-const Orbit = createView(function () {
-  this.setName("Orbit");
+import { hex, hsl, patchHSL } from "~/colors";
 
-  let ignoreHashChange = false;
+render(<Orbit />, appElement);
 
-  this.attachStore(ColorStore(window.location.hash));
+function Orbit() {
+  const ignoreHashChange = useRef(false);
 
-  const { $hex, patchHSL } = this.useStore(ColorStore);
+  console.log("render Orbit");
 
-  const debouncer = makeDebouncer(50, true);
-
-  this.watch([$hex], (hex) => {
+  useSignalEffect(() => {
+    const value = hex.value;
     debouncer.queue(() => {
-      ignoreHashChange = true;
-      window.location.hash = hex;
+      ignoreHashChange.current = true;
+      window.location.hash = value;
     });
   });
 
-  const onHashChange = () => {
-    if (ignoreHashChange) {
-      ignoreHashChange = false;
-      return;
+  useEffect(() => {
+    const initialHashValue = window.location.hash;
+    if (initialHashValue && validateHex(initialHashValue)) {
+      hsl.value = hslFromRGB(rgbFromHex(initialHashValue));
     }
 
-    const hash = window.location.hash.slice(1);
+    function onHashChange() {
+      if (ignoreHashChange.current) {
+        ignoreHashChange.current = false;
+        return;
+      }
 
-    this.log({ hash, valid: validateHex(hash) });
+      const hash = window.location.hash.slice(1);
 
-    if (validateHex(hash)) {
-      const hsl = hslFromRGB(rgbFromHex(hash));
-      patchHSL(hsl);
+      if (validateHex(hash)) {
+        const hsl = hslFromRGB(rgbFromHex(hash));
+        patchHSL(hsl);
+      }
     }
-  };
 
-  this.onMount(() => {
-    onHashChange();
     window.addEventListener("hashchange", onHashChange);
 
     appElement.classList.remove("loading");
-  });
 
-  this.onUnmount(() => {
-    window.removeEventListener("hashchange", onHashChange);
-  });
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+    };
+  }, []);
 
   return (
-    <div class={styles.container} style={{ backgroundColor: $hex }}>
-      <aside class={styles.tools}>
-        <DownloadSwatch />
-      </aside>
+    <div class={styles.container} style={{ backgroundColor: hex.value }}>
+      <aside class={styles.tools}>{/* <DownloadSwatch /> */}</aside>
 
       <main class={styles.controls}>
         <Wheel />
-        <Formats />
+        {/* <Formats /> */}
       </main>
     </div>
   );
-});
+}
 
-Dolla.watch([Dolla.i18n.$locale], (locale) => {
-  Dolla.batch.write(() => {
-    appElement.classList.forEach((className) => {
-      if (className.startsWith("orbit-locale-")) {
-        appElement.classList.remove(className);
-      }
-    });
+// const Orbit = createView(function () {
+//   this.setName("Orbit");
 
-    appElement.classList.add(`orbit-locale-${locale}`);
-  });
-});
+//   let ignoreHashChange = false;
 
-Dolla.mount(appElement, Orbit);
+//   this.attachStore(ColorStore(window.location.hash));
+
+//   const { $hex, patchHSL } = this.useStore(ColorStore);
+
+//   const debouncer = makeDebouncer(50, true);
+
+//   this.watch([$hex], (hex) => {
+//     debouncer.queue(() => {
+//       ignoreHashChange = true;
+//       window.location.hash = hex;
+//     });
+//   });
+
+//   const onHashChange = () => {
+//     if (ignoreHashChange) {
+//       ignoreHashChange = false;
+//       return;
+//     }
+
+//     const hash = window.location.hash.slice(1);
+
+//     this.log({ hash, valid: validateHex(hash) });
+
+//     if (validateHex(hash)) {
+//       const hsl = hslFromRGB(rgbFromHex(hash));
+//       patchHSL(hsl);
+//     }
+//   };
+
+//   this.onMount(() => {
+//     onHashChange();
+//     window.addEventListener("hashchange", onHashChange);
+
+//     appElement.classList.remove("loading");
+//   });
+
+//   this.onUnmount(() => {
+//     window.removeEventListener("hashchange", onHashChange);
+//   });
+
+//   return (
+//     <div class={styles.container} style={{ backgroundColor: $hex }}>
+//       <aside class={styles.tools}>
+//         <DownloadSwatch />
+//       </aside>
+
+//       <main class={styles.controls}>
+//         <Wheel />
+//         <Formats />
+//       </main>
+//     </div>
+//   );
+// });
+
+// Dolla.watch([Dolla.i18n.$locale], (locale) => {
+//   Dolla.batch.write(() => {
+//     appElement.classList.forEach((className) => {
+//       if (className.startsWith("orbit-locale-")) {
+//         appElement.classList.remove(className);
+//       }
+//     });
+
+//     appElement.classList.add(`orbit-locale-${locale}`);
+//   });
+// });
+
+// Dolla.mount(appElement, Orbit);
