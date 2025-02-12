@@ -8,7 +8,7 @@
   "scripts": {
     "start": "vite",
     "build": "NODE_ENV=production vite build",
-    "deploy": "rsync -aP --delete dist/ root@178.128.130.85:/var/www/orbit.tonymccoy.me",
+    "deploy": "rsync -aP --delete dist/ root@50.116.3.85:/var/www/orbit.tonymccoy.me",
     "assets": "pwa-assets-generator"
   },
   "author": "Tony McCoy <tony@ratwizard.io>",

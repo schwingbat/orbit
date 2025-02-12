@@ -14,8 +14,6 @@ import { Wheel } from "./components/Wheel/Wheel";
 
 const appElement = document.querySelector("#app")! as HTMLElement;
 
-Dolla.setEnv("development");
-
 Dolla.i18n.setup({
   locale: "auto",
   translations: [
