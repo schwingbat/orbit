@@ -40,8 +40,6 @@ export function WheelSlider(props: WheelSliderProps) {
 
     const track = trackRef.current!;
 
-    console.log("test");
-
     // Get center of hue wheel.
     const rect = track.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -75,32 +73,33 @@ export function WheelSlider(props: WheelSliderProps) {
     };
   }, []);
 
-  const imgClasses = useComputed(() =>
-    classNames(styles.colors, interacting.value && styles.visible)
-  );
-  const knobClasses = useComputed(() =>
-    classNames(styles.knob, interacting.value && styles.active)
-  );
-  const trackStyle = useComputed(() => {
-    return {
-      transform: `rotate(${props.value.value * 360}deg)`,
-    };
-  });
-
   return (
     <div
       class={styles.container}
-      style={{
-        "--wheel-color": wheelColor.value,
-        "--knob-color": knobColor.value,
-      }}
+      style={useComputed(() => {
+        return `--wheel-color: ${wheelColor.value}; --knob-color: ${knobColor.value}`;
+      })}
     >
-      <img class={imgClasses} src={colorsImage} alt="" />
+      <img
+        class={useComputed(() =>
+          classNames(styles.colors, interacting.value && styles.visible)
+        )}
+        src={colorsImage}
+        alt=""
+      />
 
-      <div ref={trackRef} class={styles.track} style={trackStyle}>
+      <div
+        ref={trackRef}
+        class={styles.track}
+        style={useComputed(() => {
+          return `transform: rotate(${props.value.value * 360}deg)`;
+        })}
+      >
         <div class={styles.knobRotator}>
           <div
-            class={knobClasses}
+            class={useComputed(() =>
+              classNames(styles.knob, interacting.value && styles.active)
+            )}
             onMouseDown={onInteractStart}
             onTouchStart={onInteractStart}
           />

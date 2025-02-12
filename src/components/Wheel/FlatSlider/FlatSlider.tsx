@@ -53,10 +53,9 @@ export function FlatSlider(props: FlatSliderProps) {
   return (
     <div
       class={styles.container}
-      style={{
-        "--track-color": trackColor.value,
-        "--knob-color": knobColor.value,
-      }}
+      style={useComputed(() => {
+        return `--track-color: ${trackColor.value}; --knob-color: ${knobColor.value};`;
+      })}
     >
       <span class={styles.label}>{label}</span>
       <input

@@ -1,51 +1,45 @@
-import {
-  createState,
-  createView,
-  derive,
-  type State,
-} from "@manyducks.co/dolla";
+import classNames from "classnames";
 import type { HSLColor } from "../../types/colors";
-import { ColorStore } from "../../stores/ColorStore";
 import {
   formatHex,
   formatHSL,
   formatRGB,
-  rgbFromHex,
   hslFromRGB,
+  rgbFromHex,
 } from "../../utils/convert";
 import { validateHex, validateHSL, validateRGB } from "../../utils/validate";
 import styles from "./Formats.module.css";
 
-function is<T>(target: T) {
-  return function compare(value: any): value is T {
-    return target === value;
-  };
-}
+import {
+  batch,
+  Signal,
+  untracked,
+  useComputed,
+  useSignal,
+  useSignalEffect,
+} from "@preact/signals";
+import { hex, hsl, isDark, patchHSL, rgb } from "~/colors";
+import { useRef } from "preact/hooks";
 
-export const Formats = createView(function () {
-  const { $hsl, $rgb, $hex, $isDark, patchHSL } = this.useStore(ColorStore);
+export function Formats() {
+  const formattedHSL = useComputed(() => formatHSL(hsl.value));
+  const formattedRGB = useComputed(() => formatRGB(rgb.value));
+  const formattedHex = useComputed(() => formatHex(hex.value, true));
 
-  const $formattedHSL = derive([$hsl], formatHSL);
-  const $formattedRGB = derive([$rgb], formatRGB);
-  const $formattedHex = derive([$hex], (hex) => formatHex(hex, true));
-
-  // Tracks which input type triggered the last update so we can skip updating its value.
-  const [$trigger, setTrigger] = createState<string>();
+  console.log("render Formats");
 
   return (
     <div
       class={styles.container}
-      style={{
-        "--selected-color": $hex,
-        "--control-color": derive([$isDark], (dark) =>
-          dark ? "#fff" : "#000"
-        ),
-      }}
+      style={useComputed(() => {
+        return `--selected-color: ${hex.value}; --control-color: ${
+          isDark.value ? "#fff" : "#000"
+        };`;
+      })}
     >
       <FormatInput
         label="HSL"
-        $value={$formattedHSL}
-        $ignoreValueUpdate={derive([$trigger], is("HSL"))}
+        value={formattedHSL}
         parse={(value) => {
           const [h, s, l] = value
             .replace("%", "")
@@ -58,31 +52,23 @@ export const Formats = createView(function () {
             return hsl;
           }
         }}
-        onChange={(value) => {
-          setTrigger("HSL");
-          patchHSL(value);
-        }}
+        onChange={patchHSL}
       />
 
       <FormatInput
         label="HEX"
-        $value={$formattedHex}
-        $ignoreValueUpdate={derive([$trigger], is("HEX"))}
+        value={formattedHex}
         parse={(value) => {
           if (validateHex(value)) {
             return hslFromRGB(rgbFromHex(value));
           }
         }}
-        onChange={(value) => {
-          setTrigger("HEX");
-          patchHSL(value);
-        }}
+        onChange={patchHSL}
       />
 
       <FormatInput
         label="RGB"
-        $value={$formattedRGB}
-        $ignoreValueUpdate={derive([$trigger], is("RGB"))}
+        value={formattedRGB}
         parse={(value) => {
           const numbers = value.split(",").map((c) => parseInt(c));
           const rgb = {
@@ -95,97 +81,92 @@ export const Formats = createView(function () {
             return hslFromRGB(rgb);
           }
         }}
-        onChange={(value) => {
-          setTrigger("RGB");
-          patchHSL(value);
-        }}
+        onChange={patchHSL}
       />
     </div>
   );
-});
+}
 
 type FormatInputProps = {
   label: string;
-  $value: State<string>;
-  $ignoreValueUpdate: State<boolean>;
+  value: Signal<string>;
   parse: (value: string) => HSLColor | undefined;
   onChange: (hsl: HSLColor) => void;
 };
 
-const FormatInput = createView(function (props: FormatInputProps) {
-  const { $value, $ignoreValueUpdate, parse, onChange } = props;
+function FormatInput(props: FormatInputProps) {
+  const { value, parse, onChange } = props;
 
-  const [$isFocused, setIsFocused] = createState(false);
-  const [$isValid, setIsValid] = createState(true);
-  const [$inputValue, setInputValue] = createState($value.get());
+  const isFocused = useSignal(false);
+  const isValid = useSignal(true);
+  const inputValue = useSignal(value.peek());
 
-  const $label = derive([$isValid], (isValid) => {
-    if (isValid) {
-      return props.label;
-    } else {
-      return "⚠️";
-    }
-  });
+  console.log("render FormatInput");
 
-  let ignoreChange = false;
+  const label = useComputed(() => (isValid.value ? props.label : "⚠️"));
 
-  this.watch([$inputValue], (value) => {
-    const parsed = parse(value);
+  const ignoreChange = useRef(false);
+
+  useSignalEffect(() => {
+    const parsed = parse(inputValue.value);
 
     if (parsed) {
-      setIsValid(true);
+      isValid.value = true;
 
-      if (ignoreChange) {
-        ignoreChange = false;
+      if (ignoreChange.current) {
+        ignoreChange.current = false;
         return;
       }
 
       onChange(parsed);
     } else {
-      setIsValid(false);
+      isValid.value = false;
     }
   });
 
-  this.watch([$value], (value) => {
-    if ($ignoreValueUpdate.get()) {
-      return;
-    }
-
-    ignoreChange = true;
-    setInputValue(value);
+  useSignalEffect(() => {
+    ignoreChange.current = true;
+    const newValue = value.value;
+    untracked(() => {
+      inputValue.value = newValue;
+    });
   });
 
   return (
     <div
-      class={{
-        [styles.format]: true,
-        [styles.invalid]: derive([$isValid], (valid) => !valid),
-        [styles.focused]: $isFocused,
-      }}
+      class={useComputed(() =>
+        classNames({
+          [styles.format]: true,
+          [styles.invalid]: isValid.value,
+          [styles.focused]: isFocused.value,
+        })
+      )}
     >
-      <span class={styles.formatLabel}>{$label}</span>
+      <span class={styles.formatLabel}>{label}</span>
       <input
         class={styles.formatInput}
         type="text"
-        value={$inputValue}
+        value={inputValue}
         onInput={(e) => {
           const target = e.currentTarget as HTMLInputElement;
-          setInputValue(target.value);
+          inputValue.value = target.value;
         }}
-        onfocus={() => {
-          setIsFocused(true);
+        onFocus={() => {
+          isFocused.value = true;
         }}
-        onblur={() => {
-          setIsFocused(false);
+        onBlur={() => {
+          isFocused.value = false;
 
-          const parsed = parse($inputValue.get());
+          const parsed = parse(inputValue.value);
           if (parsed) {
-            setIsValid(true);
-            onChange(parsed);
-            setInputValue($value.get());
+            batch(() => {
+              isValid.value = true;
+              onChange(parsed);
+              inputValue.value = value.value;
+            });
           }
         }}
       />
     </div>
   );
-});
+}

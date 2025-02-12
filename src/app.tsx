@@ -1,6 +1,6 @@
 import "preact/debug";
 
-import { useSignalEffect } from "@preact/signals";
+import { useComputed, useSignalEffect } from "@preact/signals";
 import { render } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 
@@ -10,8 +10,8 @@ import { validateHex } from "./utils/validate";
 
 import styles from "./app.module.css";
 
-// import { DownloadSwatch } from "./components/DownloadSwatch/DownloadSwatch";
-// import { Formats } from "./components/Formats/Formats";
+import { DownloadSwatch } from "./components/DownloadSwatch/DownloadSwatch";
+import { Formats } from "./components/Formats/Formats";
 import { Wheel } from "./components/Wheel/Wheel";
 
 const appElement = document.querySelector("#app")! as HTMLElement;
@@ -64,13 +64,17 @@ function Orbit() {
     };
   }, []);
 
+  const containerStyle = useComputed(() => `background-color: ${hex.value}`);
+
   return (
-    <div class={styles.container} style={{ backgroundColor: hex.value }}>
-      <aside class={styles.tools}>{/* <DownloadSwatch /> */}</aside>
+    <div class={styles.container} style={containerStyle}>
+      <aside class={styles.tools}>
+        <DownloadSwatch />
+      </aside>
 
       <main class={styles.controls}>
         <Wheel />
-        {/* <Formats /> */}
+        <Formats />
       </main>
     </div>
   );

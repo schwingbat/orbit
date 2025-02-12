@@ -1,24 +1,25 @@
-import { createView, derive, t } from "@manyducks.co/dolla";
-import { ColorStore } from "../../stores/ColorStore";
+import { useComputed } from "@preact/signals";
 import { formatHex, formatHSL, formatRGB } from "../../utils/convert";
 import { swatchify } from "../../utils/swatchify";
 
 import styles from "./DownloadSwatch.module.css";
 
+import { hsl, rgb, hex, isDark } from "~/colors";
+
 /**
  * A button that downloads a swatch PNG of the current color when clicked.
  */
-export const DownloadSwatch = createView(function () {
-  const { $hsl, $rgb, $hex, $isDark } = this.useStore(ColorStore);
+export function DownloadSwatch() {
+  console.log("render DownloadSwatch");
 
   /**
    * Generate a swatch image and download it with a temporary <a> tag.
    */
   const download = () => {
     const colors = {
-      hsl: formatHSL($hsl.get()),
-      rgb: formatRGB($rgb.get()),
-      hex: formatHex($hex.get(), true),
+      hsl: formatHSL(hsl.value),
+      rgb: formatRGB(rgb.value),
+      hex: formatHex(hex.value, true),
     };
 
     const swatch = swatchify(colors);
@@ -35,15 +36,15 @@ export const DownloadSwatch = createView(function () {
   return (
     <button
       class={styles.button}
-      style={{
-        "--button-color": derive([$isDark], (dark) => (dark ? "#fff" : "#000")),
-        "--button-hover-bg-color": derive([$isDark], (dark) =>
-          dark ? "#fff3" : "#0002"
-        ),
-      }}
-      onclick={download}
+      style={useComputed(
+        () =>
+          `--button-color: ${
+            isDark.value ? "#fff" : "#000"
+          }; --button-color-bg-hover: ${isDark.value ? "#fff3" : "#0002"}`
+      )}
+      onClick={download}
     >
-      {t("downloadSwatch")}
+      Download Swatch
     </button>
   );
-});
+}
