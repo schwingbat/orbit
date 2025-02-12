@@ -1,35 +1,40 @@
-import { Signal, useComputed, useSignal } from "@preact/signals";
-import classNames from "classnames";
-import { useEffect, useRef } from "preact/hooks";
+import {
+  Accessor,
+  createSignal,
+  onCleanup,
+  onMount,
+  useContext,
+} from "solid-js";
 import styles from "./WheelSlider.module.css";
 import colorsImage from "./colors.png";
-
-import { isDark } from "~/colors";
+import { Colors } from "~/colors";
 
 type WheelSliderProps = {
-  value: Signal<number>;
-  activeKnobColor: Signal<string>;
+  value: Accessor<number>;
+  activeKnobColor: Accessor<string>;
   onValueChange: (value: number) => void;
 };
 
 export function WheelSlider(props: WheelSliderProps) {
-  const interacting = useSignal(false);
-  const wheelColor = useComputed(() => (isDark.value ? "#fff" : "#000"));
-  const knobColor = useComputed(() => {
-    if (interacting.value) {
-      return props.activeKnobColor.value;
+  const { isDark } = useContext(Colors);
+
+  const [interacting, setInteracting] = createSignal(false);
+  const wheelColor = () => (isDark() ? "#fff" : "#000");
+  const knobColor = () => {
+    if (interacting()) {
+      return props.activeKnobColor();
     } else {
-      return wheelColor.value;
+      return wheelColor();
     }
-  });
+  };
 
   console.log("render WheelSlider");
 
-  const trackRef = useRef<HTMLDivElement>(null);
+  let track: HTMLDivElement | null = null;
 
   function onInteractStart(e: Event) {
     e.preventDefault();
-    interacting.value = true;
+    setInteracting(true);
 
     window.addEventListener("mousemove", onInteract);
     window.addEventListener("touchmove", onInteract);
@@ -38,12 +43,8 @@ export function WheelSlider(props: WheelSliderProps) {
   function onInteract(e: any) {
     e.preventDefault();
 
-    const track = trackRef.current!;
-
-    console.log("test");
-
     // Get center of hue wheel.
-    const rect = track.getBoundingClientRect();
+    const rect = track!.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
@@ -59,48 +60,54 @@ export function WheelSlider(props: WheelSliderProps) {
   }
 
   function onInteractEnd() {
-    interacting.value = false;
+    setInteracting(false);
 
     window.removeEventListener("mousemove", onInteract);
     window.removeEventListener("touchmove", onInteract);
   }
 
-  useEffect(() => {
+  onMount(() => {
     window.addEventListener("mouseup", onInteractEnd);
     window.addEventListener("touchend", onInteractEnd);
+  });
 
-    return () => {
-      window.removeEventListener("mouseup", onInteractEnd);
-      window.removeEventListener("touchend", onInteractEnd);
-    };
-  }, []);
-
-  const imgClasses = useComputed(() =>
-    classNames(styles.colors, interacting.value && styles.visible)
-  );
-  const knobClasses = useComputed(() =>
-    classNames(styles.knob, interacting.value && styles.active)
-  );
-  const trackStyle = useComputed(() => {
-    return {
-      transform: `rotate(${props.value.value * 360}deg)`,
-    };
+  onCleanup(() => {
+    window.removeEventListener("mouseup", onInteractEnd);
+    window.removeEventListener("touchend", onInteractEnd);
   });
 
   return (
     <div
       class={styles.container}
       style={{
-        "--wheel-color": wheelColor.value,
-        "--knob-color": knobColor.value,
+        "--wheel-color": wheelColor(),
+        "--knob-color": knobColor(),
       }}
     >
-      <img class={imgClasses} src={colorsImage} alt="" />
+      <img
+        classList={{
+          [styles.colors]: true,
+          [styles.visible]: interacting(),
+        }}
+        src={colorsImage}
+        alt=""
+      />
 
-      <div ref={trackRef} class={styles.track} style={trackStyle}>
+      <div
+        ref={(node) => {
+          track = node;
+        }}
+        class={styles.track}
+        style={{
+          transform: `rotate(${props.value() * 360}deg)`,
+        }}
+      >
         <div class={styles.knobRotator}>
           <div
-            class={knobClasses}
+            classList={{
+              [styles.knob]: true,
+              [styles.active]: interacting(),
+            }}
             onMouseDown={onInteractStart}
             onTouchStart={onInteractStart}
           />

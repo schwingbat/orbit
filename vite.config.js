@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import preact from "@preact/preset-vite";
+import solid from "vite-plugin-solid";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
@@ -10,7 +10,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    preact(),
+    solid(),
     VitePWA({
       registerType: "autoUpdate",
       workbox: {

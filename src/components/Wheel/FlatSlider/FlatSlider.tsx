@@ -1,71 +1,74 @@
-import { Signal, useComputed, useSignal } from "@preact/signals";
-import classNames from "classnames";
-import { useEffect } from "preact/hooks";
+import {
+  Accessor,
+  createSignal,
+  onCleanup,
+  onMount,
+  useContext,
+} from "solid-js";
+import { Colors } from "~/colors";
 import styles from "./FlatSlider.module.css";
 
-import { isDark } from "~/colors";
-
 type FlatSliderProps = {
-  label: Signal<string> | string;
-  value: Signal<number>;
-  activeKnobColor: Signal<string>;
+  label: Accessor<string>;
+  value: Accessor<number>;
+  activeKnobColor: Accessor<string>;
   onValueChange: (value: number) => void;
 };
 
 export function FlatSlider(props: FlatSliderProps) {
+  const { isDark } = useContext(Colors);
   const { label, value, activeKnobColor } = props;
 
-  const interacting = useSignal(false);
-  const trackColor = useComputed(() => (isDark.value ? "#fff" : "#000"));
-  const knobColor = useComputed(() => {
-    if (interacting.value) {
-      return activeKnobColor.value;
+  const [interacting, setInteracting] = createSignal(false);
+  const trackColor = () => (isDark() ? "#fff" : "#000");
+  const knobColor = () => {
+    if (interacting()) {
+      return activeKnobColor();
     } else {
-      return trackColor.value;
+      return trackColor();
     }
-  });
+  };
 
   console.log("render FlatSlider");
 
-  const inputValue = useComputed(() => String(value.value));
-  const inputClassName = useComputed(() =>
-    classNames(styles.input, interacting.value && styles.active)
-  );
-
+  const inputValue = () => String(value());
   function onInteractStart() {
-    interacting.value = true;
+    setInteracting(true);
   }
 
   function onInteractEnd() {
-    interacting.value = false;
+    setInteracting(false);
   }
 
-  useEffect(() => {
+  onMount(() => {
     window.addEventListener("mouseup", onInteractEnd);
     window.addEventListener("touchend", onInteractEnd);
+  });
 
-    return () => {
-      window.removeEventListener("mouseup", onInteractEnd);
-      window.removeEventListener("touchend", onInteractEnd);
-    };
+  onCleanup(() => {
+    window.removeEventListener("mouseup", onInteractEnd);
+    window.removeEventListener("touchend", onInteractEnd);
   });
 
   return (
     <div
       class={styles.container}
       style={{
-        "--track-color": trackColor.value,
-        "--knob-color": knobColor.value,
+        "--track-color": trackColor(),
+        "--knob-color": knobColor(),
       }}
     >
-      <span class={styles.label}>{label}</span>
+      <span class={styles.label}>{label()}</span>
       <input
-        class={inputClassName}
+        classList={{
+          [styles.input]: true,
+          [styles.active]: interacting(),
+        }}
         type="range"
         min={0}
         max={1}
         step={0.0001}
-        value={inputValue}
+        value={inputValue()}
         onInput={(e) => {
           const target = e.currentTarget as HTMLInputElement;
           props.onValueChange(Number(target.value));

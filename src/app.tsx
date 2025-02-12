@@ -1,8 +1,4 @@
-import "preact/debug";
-
-import { useSignalEffect } from "@preact/signals";
-import { render } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import { render } from "solid-js/web";
 
 import { hslFromRGB, rgbFromHex } from "./utils/convert";
 import { makeDebouncer } from "./utils/makeDebouncer";
@@ -11,66 +7,75 @@ import { validateHex } from "./utils/validate";
 import styles from "./app.module.css";
 
 // import { DownloadSwatch } from "./components/DownloadSwatch/DownloadSwatch";
-// import { Formats } from "./components/Formats/Formats";
+import { Formats } from "./components/Formats/Formats";
 import { Wheel } from "./components/Wheel/Wheel";
+import { Colors, createColorState } from "./colors";
+import { createEffect, onCleanup, onMount, useContext } from "solid-js";
 
 const appElement = document.querySelector("#app")! as HTMLElement;
 
 const debouncer = makeDebouncer(50, true);
 
-import { hex, hsl, patchHSL } from "~/colors";
-
-render(<Orbit />, appElement);
+render(
+  () => (
+    <Colors.Provider value={createColorState()}>
+      <Orbit />
+    </Colors.Provider>
+  ),
+  appElement
+);
 
 function Orbit() {
-  const ignoreHashChange = useRef(false);
+  const { hex, hsl, patchHSL } = useContext(Colors);
+
+  let ignoreHashChange = false;
 
   console.log("render Orbit");
 
-  useSignalEffect(() => {
-    const value = hex.value;
+  createEffect(() => {
+    const value = hex();
     debouncer.queue(() => {
-      ignoreHashChange.current = true;
+      ignoreHashChange = true;
       window.location.hash = value;
     });
   });
 
-  useEffect(() => {
-    const initialHashValue = window.location.hash;
-    if (initialHashValue && validateHex(initialHashValue)) {
-      hsl.value = hslFromRGB(rgbFromHex(initialHashValue));
+  function onHashChange() {
+    if (ignoreHashChange) {
+      ignoreHashChange = false;
+      return;
     }
 
-    function onHashChange() {
-      if (ignoreHashChange.current) {
-        ignoreHashChange.current = false;
-        return;
-      }
+    const hash = window.location.hash.slice(1);
 
-      const hash = window.location.hash.slice(1);
+    if (validateHex(hash)) {
+      const hsl = hslFromRGB(rgbFromHex(hash));
+      patchHSL(hsl);
+    }
+  }
 
-      if (validateHex(hash)) {
-        const hsl = hslFromRGB(rgbFromHex(hash));
-        patchHSL(hsl);
-      }
+  onMount(() => {
+    const initialHashValue = window.location.hash;
+    if (initialHashValue && validateHex(initialHashValue)) {
+      patchHSL(hslFromRGB(rgbFromHex(initialHashValue)));
     }
 
     window.addEventListener("hashchange", onHashChange);
 
     appElement.classList.remove("loading");
+  });
 
-    return () => {
-      window.removeEventListener("hashchange", onHashChange);
-    };
-  }, []);
+  onCleanup(() => {
+    window.removeEventListener("hashchange", onHashChange);
+  });
 
   return (
-    <div class={styles.container} style={{ backgroundColor: hex.value }}>
+    <div class={styles.container} style={`background-color: ${hex()}`}>
       <aside class={styles.tools}>{/* <DownloadSwatch /> */}</aside>
 
       <main class={styles.controls}>
         <Wheel />
-        {/* <Formats /> */}
+        <Formats />
       </main>
     </div>
   );

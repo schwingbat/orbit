@@ -1,22 +1,19 @@
-import { useComputed } from "@preact/signals";
+import { useContext } from "solid-js";
 import { FlatSlider } from "./FlatSlider/FlatSlider";
 import styles from "./Wheel.module.css";
 import { WheelSlider } from "./WheelSlider/WheelSlider";
-
-import { hsl, patchHSL } from "~/colors";
+import { Colors } from "~/colors";
 
 export function Wheel() {
-  const hue = useComputed(() => hsl.value.h);
-  const sat = useComputed(() => hsl.value.s);
-  const light = useComputed(() => hsl.value.l);
+  const { hsl, patchHSL } = useContext(Colors);
 
-  const hueKnobColor = useComputed(() => `hsl(${hue.value * 360}, 100%, 50%)`);
-  const satKnobColor = useComputed(
-    () => `hsl(${hue.value * 360}, ${sat.value * 100}%, 50%)`
-  );
-  const lightKnobColor = useComputed(
-    () => `hsl(${hue.value * 360}, 0%, ${light.value * 100}%)`
-  );
+  const hue = () => hsl().h;
+  const sat = () => hsl().s;
+  const light = () => hsl().l;
+
+  const hueKnobColor = () => `hsl(${hue() * 360}, 100%, 50%)`;
+  const satKnobColor = () => `hsl(${hue() * 360}, ${sat() * 100}%, 50%)`;
+  const lightKnobColor = () => `hsl(${hue() * 360}, 0%, ${light() * 100}%)`;
 
   return (
     <div class={styles.wheel}>
@@ -33,7 +30,7 @@ export function Wheel() {
       <div class={styles.satAndLight}>
         <div class={styles.slider}>
           <FlatSlider
-            label="Saturation"
+            label={() => "Saturation"}
             value={sat}
             activeKnobColor={satKnobColor}
             onValueChange={(s) => {
@@ -43,7 +40,7 @@ export function Wheel() {
         </div>
         <div class={styles.slider}>
           <FlatSlider
-            label="Lightness"
+            label={() => "Lightness"}
             value={light}
             activeKnobColor={lightKnobColor}
             onValueChange={(l) => {
