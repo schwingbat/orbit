@@ -1,4 +1,4 @@
-import { createView, derive, t } from "@manyducks.co/dolla";
+import { derive, t, type ViewContext } from "@manyducks.co/dolla";
 import { ColorStore } from "../../stores/ColorStore";
 import { formatHex, formatHSL, formatRGB } from "../../utils/convert";
 import { swatchify } from "../../utils/swatchify";
@@ -8,8 +8,8 @@ import styles from "./DownloadSwatch.module.css";
 /**
  * A button that downloads a swatch PNG of the current color when clicked.
  */
-export const DownloadSwatch = createView(function () {
-  const { $hsl, $rgb, $hex, $isDark } = this.useStore(ColorStore);
+export function DownloadSwatch(_: {}, ctx: ViewContext) {
+  const { $hsl, $rgb, $hex, $isDark } = ctx.use(ColorStore);
 
   /**
    * Generate a swatch image and download it with a temporary <a> tag.
@@ -38,7 +38,7 @@ export const DownloadSwatch = createView(function () {
       style={{
         "--button-color": derive([$isDark], (dark) => (dark ? "#fff" : "#000")),
         "--button-hover-bg-color": derive([$isDark], (dark) =>
-          dark ? "#fff3" : "#0002"
+          dark ? "#fff3" : "#0002",
         ),
       }}
       onclick={download}
@@ -46,4 +46,4 @@ export const DownloadSwatch = createView(function () {
       {t("downloadSwatch")}
     </button>
   );
-});
+}

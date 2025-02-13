@@ -1,4 +1,4 @@
-import Dolla, { createView } from "@manyducks.co/dolla";
+import Dolla, { type ViewContext } from "@manyducks.co/dolla";
 
 import { rgbFromHex, hslFromRGB } from "./utils/convert";
 import { makeDebouncer } from "./utils/makeDebouncer";
@@ -50,18 +50,16 @@ Dolla.i18n.setup({
   ],
 });
 
-const Orbit = createView(function () {
-  this.setName("Orbit");
+function Orbit(_: {}, ctx: ViewContext) {
+  ctx.setName("Orbit");
 
   let ignoreHashChange = false;
 
-  this.attachStore(ColorStore(window.location.hash));
-
-  const { $hex, patchHSL } = this.useStore(ColorStore);
+  const { $hex, patchHSL } = ctx.provide(ColorStore, window.location.hash);
 
   const debouncer = makeDebouncer(50, true);
 
-  this.watch([$hex], (hex) => {
+  ctx.watch([$hex], (hex) => {
     debouncer.queue(() => {
       ignoreHashChange = true;
       window.location.hash = hex;
@@ -76,7 +74,7 @@ const Orbit = createView(function () {
 
     const hash = window.location.hash.slice(1);
 
-    this.log({ hash, valid: validateHex(hash) });
+    ctx.log({ hash, valid: validateHex(hash) });
 
     if (validateHex(hash)) {
       const hsl = hslFromRGB(rgbFromHex(hash));
@@ -84,14 +82,14 @@ const Orbit = createView(function () {
     }
   };
 
-  this.onMount(() => {
+  ctx.onMount(() => {
     onHashChange();
     window.addEventListener("hashchange", onHashChange);
 
     appElement.classList.remove("loading");
   });
 
-  this.onUnmount(() => {
+  ctx.onUnmount(() => {
     window.removeEventListener("hashchange", onHashChange);
   });
 
@@ -107,7 +105,7 @@ const Orbit = createView(function () {
       </main>
     </div>
   );
-});
+}
 
 Dolla.watch([Dolla.i18n.$locale], (locale) => {
   Dolla.batch.write(() => {

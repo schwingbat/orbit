@@ -1,8 +1,8 @@
 import {
   createState,
-  createView,
   derive,
   type State,
+  type ViewContext,
 } from "@manyducks.co/dolla";
 import styles from "./FlatSlider.module.css";
 import { ColorStore } from "../../../stores/ColorStore";
@@ -14,13 +14,13 @@ type FlatSliderProps = {
   onValueChange: (value: number) => void;
 };
 
-export const FlatSlider = createView(function (props: FlatSliderProps) {
-  const { $isDark } = this.useStore(ColorStore);
+export function FlatSlider(props: FlatSliderProps, ctx: ViewContext) {
+  const { $isDark } = ctx.use(ColorStore);
 
   const { $label, $value, $activeKnobColor, onValueChange } = props;
 
-  this.watch([$label], (label) => {
-    this.setName(`Slider:${label}`);
+  ctx.watch([$label], (label) => {
+    ctx.setName(`Slider:${label}`);
   });
 
   const [$interacting, setInteracting] = createState(false);
@@ -33,15 +33,15 @@ export const FlatSlider = createView(function (props: FlatSliderProps) {
       } else {
         return wheelColor;
       }
-    }
+    },
   );
 
-  this.watch([$value], (value) => {
-    this.log("value", value);
+  ctx.watch([$value], (value) => {
+    ctx.log("value", value);
   });
 
-  this.watch([$interacting], (value) => {
-    this.log("interacting", value);
+  ctx.watch([$interacting], (value) => {
+    ctx.log("interacting", value);
   });
 
   function onInteractStart() {
@@ -52,12 +52,12 @@ export const FlatSlider = createView(function (props: FlatSliderProps) {
     setInteracting(false);
   }
 
-  this.onMount(() => {
+  ctx.onMount(() => {
     window.addEventListener("mouseup", onInteractEnd);
     window.addEventListener("touchend", onInteractEnd);
   });
 
-  this.onUnmount(() => {
+  ctx.onUnmount(() => {
     window.removeEventListener("mouseup", onInteractEnd);
     window.removeEventListener("touchend", onInteractEnd);
   });
@@ -90,4 +90,4 @@ export const FlatSlider = createView(function (props: FlatSliderProps) {
       />
     </div>
   );
-});
+}

@@ -1,4 +1,4 @@
-import { createState, createStore, derive } from "@manyducks.co/dolla";
+import { createState, derive } from "@manyducks.co/dolla";
 import {
   rgbFromHex,
   rgbFromHSL,
@@ -10,7 +10,7 @@ import { makeDebouncer } from "~/utils/makeDebouncer";
 
 const saveDebouncer = makeDebouncer(100);
 
-export const ColorStore = createStore(function (initialColorHex: string) {
+export function ColorStore(initialColorHex: string) {
   const [$hsl, setHSL] = createState({ h: 1, s: 0.5, l: 0.7 });
 
   if (initialColorHex && validateHex(initialColorHex)) {
@@ -46,4 +46,4 @@ export const ColorStore = createStore(function (initialColorHex: string) {
 
     patchHSL,
   };
-});
+}

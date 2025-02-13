@@ -1,12 +1,12 @@
-import { createView, derive, t } from "@manyducks.co/dolla";
+import { derive, t, type ViewContext } from "@manyducks.co/dolla";
 import { ColorStore } from "~/stores/ColorStore";
 import styles from "./Wheel.module.css";
 
 import { FlatSlider } from "./FlatSlider/FlatSlider";
 import { WheelSlider } from "./WheelSlider/WheelSlider";
 
-export const Wheel = createView(function () {
-  const { $hsl, patchHSL } = this.useStore(ColorStore);
+export function Wheel(_: {}, ctx: ViewContext) {
+  const { $hsl, patchHSL } = ctx.use(ColorStore);
 
   const $hue = derive([$hsl], (hsl) => hsl.h);
   const $sat = derive([$hsl], (hsl) => hsl.s);
@@ -31,7 +31,7 @@ export const Wheel = createView(function () {
             $value={$sat}
             $activeKnobColor={derive(
               [$hue, $sat],
-              (h, s) => `hsl(${h * 360}, ${s * 100}%, 50%)`
+              (h, s) => `hsl(${h * 360}, ${s * 100}%, 50%)`,
             )}
             onValueChange={(s) => {
               patchHSL({ s });
@@ -44,7 +44,7 @@ export const Wheel = createView(function () {
             $value={$light}
             $activeKnobColor={derive(
               [$hue, $light],
-              (h, l) => `hsl(${h * 360}, 0%, ${l * 100}%)`
+              (h, l) => `hsl(${h * 360}, 0%, ${l * 100}%)`,
             )}
             onValueChange={(l) => {
               patchHSL({ l });
@@ -54,4 +54,4 @@ export const Wheel = createView(function () {
       </div>
     </div>
   );
-});
+}

@@ -1,8 +1,8 @@
 import {
   createState,
-  createView,
   derive,
   type State,
+  type ViewContext,
 } from "@manyducks.co/dolla";
 import type { HSLColor } from "../../types/colors";
 import { ColorStore } from "../../stores/ColorStore";
@@ -22,8 +22,8 @@ function is<T>(target: T) {
   };
 }
 
-export const Formats = createView(function () {
-  const { $hsl, $rgb, $hex, $isDark, patchHSL } = this.useStore(ColorStore);
+export function Formats(_: {}, ctx: ViewContext) {
+  const { $hsl, $rgb, $hex, $isDark, patchHSL } = ctx.use(ColorStore);
 
   const $formattedHSL = derive([$hsl], formatHSL);
   const $formattedRGB = derive([$rgb], formatRGB);
@@ -38,7 +38,7 @@ export const Formats = createView(function () {
       style={{
         "--selected-color": $hex,
         "--control-color": derive([$isDark], (dark) =>
-          dark ? "#fff" : "#000"
+          dark ? "#fff" : "#000",
         ),
       }}
     >
@@ -102,7 +102,7 @@ export const Formats = createView(function () {
       />
     </div>
   );
-});
+}
 
 type FormatInputProps = {
   label: string;
@@ -112,7 +112,7 @@ type FormatInputProps = {
   onChange: (hsl: HSLColor) => void;
 };
 
-const FormatInput = createView(function (props: FormatInputProps) {
+function FormatInput(props: FormatInputProps, ctx: ViewContext) {
   const { $value, $ignoreValueUpdate, parse, onChange } = props;
 
   const [$isFocused, setIsFocused] = createState(false);
@@ -129,7 +129,7 @@ const FormatInput = createView(function (props: FormatInputProps) {
 
   let ignoreChange = false;
 
-  this.watch([$inputValue], (value) => {
+  ctx.watch([$inputValue], (value) => {
     const parsed = parse(value);
 
     if (parsed) {
@@ -146,7 +146,7 @@ const FormatInput = createView(function (props: FormatInputProps) {
     }
   });
 
-  this.watch([$value], (value) => {
+  ctx.watch([$value], (value) => {
     if ($ignoreValueUpdate.get()) {
       return;
     }
@@ -188,4 +188,4 @@ const FormatInput = createView(function (props: FormatInputProps) {
       />
     </div>
   );
-});
+}

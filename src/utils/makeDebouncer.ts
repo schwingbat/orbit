@@ -1,3 +1,5 @@
+const rAF = window.requestAnimationFrame;
+
 /**
  * Creates a container that calls a pending function no more than once per `timeout` milliseconds.
  * New functions can be `queue`d, replacing the pending function if there is one. Execution can also
@@ -7,7 +9,20 @@
  * @param immediate - If true, run queued function right away if timeout has elapsed and nothing is pending.
  */
 export function makeDebouncer(timeout: number, immediate = false) {
-  let pending: number | undefined;
+  let _deadline: number | null = null;
+  let _fn: ((...args: any) => any) | null = null;
+
+  function tick() {
+    if (_deadline && _fn) {
+      if (_deadline <= Date.now()) {
+        _fn();
+        _deadline = null;
+        _fn = null;
+      } else {
+        rAF(tick);
+      }
+    }
+  }
 
   return {
     /**
@@ -16,24 +31,24 @@ export function makeDebouncer(timeout: number, immediate = false) {
      * @param fn - New pending function.
      */
     queue(fn: (...args: any) => any) {
-      const callNow = immediate && !pending;
+      const now = Date.now();
 
-      window.clearTimeout(pending);
-
-      pending = window.setTimeout(() => {
-        if (!callNow) fn();
-        pending = undefined;
-      }, timeout);
-
-      if (callNow) fn();
+      if (immediate && !_fn && (!_deadline || _deadline <= now)) {
+        fn();
+        _deadline = now + timeout;
+      } else {
+        _deadline = now + timeout;
+        _fn = fn;
+        rAF(tick);
+      }
     },
 
     /**
      * Cancels the pending function.
      */
     cancel() {
-      window.clearTimeout(pending);
-      pending = undefined;
+      _deadline = null;
+      _fn = null;
     },
   };
 }

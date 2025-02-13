@@ -1,9 +1,9 @@
 import {
   createRef,
   createState,
-  createView,
   derive,
   type State,
+  type ViewContext,
 } from "@manyducks.co/dolla";
 import { ColorStore } from "../../../stores/ColorStore";
 import styles from "./WheelSlider.module.css";
@@ -15,10 +15,10 @@ type WheelSliderProps = {
   onValueChange: (value: number) => void;
 };
 
-export const WheelSlider = createView(function (props: WheelSliderProps) {
-  this.setName("Wheel:Hue");
+export function WheelSlider(props: WheelSliderProps, ctx: ViewContext) {
+  ctx.setName("Wheel:Hue");
 
-  const { $isDark } = this.useStore(ColorStore);
+  const { $isDark } = ctx.use(ColorStore);
 
   const [$interacting, setInteracting] = createState(false);
   const $wheelColor = derive([$isDark], (dark) => (dark ? "#fff" : "#000"));
@@ -30,17 +30,17 @@ export const WheelSlider = createView(function (props: WheelSliderProps) {
       } else {
         return wheelColor;
       }
-    }
+    },
   );
 
   const trackRef = createRef<HTMLElement>();
 
-  this.watch([props.$value], (value) => {
-    this.log("value", value);
+  ctx.watch([props.$value], (value) => {
+    ctx.log("value", value);
   });
 
-  this.watch([$interacting], (value) => {
-    this.log("interacting", value);
+  ctx.watch([$interacting], (value) => {
+    ctx.log("interacting", value);
   });
 
   function onInteractStart(e: Event) {
@@ -77,12 +77,12 @@ export const WheelSlider = createView(function (props: WheelSliderProps) {
     window.removeEventListener("touchmove", onInteract);
   }
 
-  this.onMount(() => {
+  ctx.onMount(() => {
     window.addEventListener("mouseup", onInteractEnd);
     window.addEventListener("touchend", onInteractEnd);
   });
 
-  this.onUnmount(() => {
+  ctx.onUnmount(() => {
     window.removeEventListener("mouseup", onInteractEnd);
     window.removeEventListener("touchend", onInteractEnd);
   });
@@ -110,7 +110,7 @@ export const WheelSlider = createView(function (props: WheelSliderProps) {
         style={{
           transform: derive(
             [props.$value],
-            (value) => `rotate(${value * 360}deg)`
+            (value) => `rotate(${value * 360}deg)`,
           ),
         }}
       >
@@ -127,4 +127,4 @@ export const WheelSlider = createView(function (props: WheelSliderProps) {
       </div>
     </div>
   );
-});
+}
