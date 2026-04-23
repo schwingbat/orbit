@@ -1,38 +1,41 @@
 .wheel {
-  --wheel-size: 350px;
+    --wheel-size: 350px;
 
-  display: flex;
-  align-items: center;
-  position: relative;
+    display: flex;
+    align-items: center;
+    position: relative;
 
-  width: var(--wheel-size);
-  height: var(--wheel-size);
+    width: var(--wheel-size);
+    height: var(--wheel-size);
+}
+
+.hue {
 }
 
 .satAndLight {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
 }
 
 .slider {
-  pointer-events: all;
-  width: 50%;
+    pointer-events: all;
+    width: 50%;
 }
 
 .slider:not(:last-child) {
-  margin-bottom: 2rem;
+    margin-bottom: 2rem;
 }
 
 @media (min-width: 769px) {
-  .wheel {
-    --wheel-size: 400px;
-  }
+    .wheel {
+        --wheel-size: 400px;
+    }
 }

@@ -37,3 +37,20 @@ export function makeDebouncer(timeout: number, immediate = false) {
     },
   };
 }
+
+export function debounce(timeout: number, callback: (...args: any) => void) {
+  let pending: number | undefined;
+
+  return function call(...args: any) {
+    const callNow = !pending;
+
+    window.clearTimeout(pending);
+
+    pending = window.setTimeout(() => {
+      if (!callNow) callback(...args);
+      pending = undefined;
+    }, timeout);
+
+    if (callNow) callback(...args);
+  };
+}

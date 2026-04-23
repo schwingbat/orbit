@@ -1,4 +1,4 @@
-.button {
+.container {
   background-color: transparent;
   border: 1px solid var(--button-color);
   color: var(--button-color);
@@ -6,10 +6,24 @@
   border-radius: 999px;
   cursor: pointer;
   font-size: 1em;
+  cursor: pointer;
 
   transition: background-color 200ms;
 }
 
-.button:hover {
+.container:hover {
   background-color: var(--button-hover-bg-color);
+}
+
+.select {
+  appearance: none;
+  background-color: transparent;
+  outline: none;
+  border: none;
+}
+
+.label {
+  font-weight: bold;
+  font-size: 0.8em;
+  margin-right: 6px;
 }

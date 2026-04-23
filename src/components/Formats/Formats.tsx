@@ -1,4 +1,13 @@
-import classNames from "classnames";
+import {
+  batch,
+  compose,
+  type Context,
+  createAtom,
+  getDebug,
+  type Getter,
+  onEffect,
+} from "@manyducks.co/dolla";
+import { hex, hsl, isDark, patchHSL, rgb } from "~/colors";
 import type { HSLColor } from "../../types/colors";
 import {
   formatHex,
@@ -7,35 +16,25 @@ import {
   hslFromRGB,
   rgbFromHex,
 } from "../../utils/convert";
-import { validateHex, validateHSL, validateRGB } from "../../utils/validate";
+import { hexIsValid, hslIsValid, rgbIsValid } from "../../utils/validate";
 import styles from "./Formats.module.css";
 
-import {
-  batch,
-  Signal,
-  untracked,
-  useComputed,
-  useSignal,
-  useSignalEffect,
-} from "@preact/signals";
-import { hex, hsl, isDark, patchHSL, rgb } from "~/colors";
-import { useRef } from "preact/hooks";
+export function Formats(this: Context) {
+  const debug = getDebug(this);
 
-export function Formats() {
-  const formattedHSL = useComputed(() => formatHSL(hsl.value));
-  const formattedRGB = useComputed(() => formatRGB(rgb.value));
-  const formattedHex = useComputed(() => formatHex(hex.value, true));
+  const formattedHSL = compose(() => formatHSL(hsl()));
+  const formattedRGB = compose(() => formatRGB(rgb()));
+  const formattedHex = compose(() => formatHex(hex(), true));
 
-  console.log("render Formats");
+  debug.log("render Formats");
 
   return (
     <div
       class={styles.container}
-      style={useComputed(() => {
-        return `--selected-color: ${hex.value}; --control-color: ${
-          isDark.value ? "#fff" : "#000"
-        };`;
-      })}
+      style={{
+        "--selected-color": hex,
+        "--control-color": () => (isDark() ? "#fff" : "#000"),
+      }}
     >
       <FormatInput
         label="HSL"
@@ -48,7 +47,7 @@ export function Formats() {
 
           const hsl = { h: h / 360, s: s / 100, l: l / 100 };
 
-          if (validateHSL(hsl)) {
+          if (hslIsValid(hsl)) {
             return hsl;
           }
         }}
@@ -59,7 +58,7 @@ export function Formats() {
         label="HEX"
         value={formattedHex}
         parse={(value) => {
-          if (validateHex(value)) {
+          if (hexIsValid(value)) {
             return hslFromRGB(rgbFromHex(value));
           }
         }}
@@ -77,7 +76,7 @@ export function Formats() {
             b: numbers[2] / 256,
           };
 
-          if (validateRGB(rgb)) {
+          if (rgbIsValid(rgb)) {
             return hslFromRGB(rgb);
           }
         }}
@@ -89,58 +88,57 @@ export function Formats() {
 
 type FormatInputProps = {
   label: string;
-  value: Signal<string>;
+  value: Getter<string>;
   parse: (value: string) => HSLColor | undefined;
   onChange: (hsl: HSLColor) => void;
 };
 
-function FormatInput(props: FormatInputProps) {
+function FormatInput(this: Context, props: FormatInputProps) {
+  const debug = getDebug(this);
+
   const { value, parse, onChange } = props;
 
-  const isFocused = useSignal(false);
-  const isValid = useSignal(true);
-  const inputValue = useSignal(value.peek());
+  const [isFocused, setIsFocused] = createAtom(false);
+  const [isValid, setIsValid] = createAtom(true);
+  const [inputValue, setInputValue] = createAtom(value());
 
-  console.log("render FormatInput");
+  debug.log("render FormatInput");
 
-  const label = useComputed(() => (isValid.value ? props.label : "⚠️"));
+  const label = compose(() => (isValid() ? props.label : "⚠️"));
 
-  const ignoreChange = useRef(false);
+  let ignoreChange = false;
 
-  useSignalEffect(() => {
-    const parsed = parse(inputValue.value);
+  // Set `inputValue` when `value` changes.
+  onEffect(this, () => {
+    ignoreChange = true;
+    setInputValue(value());
+  });
+
+  // Update `isValid` and fire `onChange` when `inputValue` changes.
+  onEffect(this, () => {
+    const parsed = parse(inputValue());
 
     if (parsed) {
-      isValid.value = true;
+      setIsValid(true);
 
-      if (ignoreChange.current) {
-        ignoreChange.current = false;
+      if (ignoreChange) {
+        ignoreChange = false;
         return;
       }
 
       onChange(parsed);
     } else {
-      isValid.value = false;
+      setIsValid(false);
     }
-  });
-
-  useSignalEffect(() => {
-    ignoreChange.current = true;
-    const newValue = value.value;
-    untracked(() => {
-      inputValue.value = newValue;
-    });
   });
 
   return (
     <div
-      class={useComputed(() =>
-        classNames({
-          [styles.format]: true,
-          [styles.invalid]: isValid.value,
-          [styles.focused]: isFocused.value,
-        })
-      )}
+      class={{
+        [styles.format]: true,
+        [styles.invalid]: compose(() => !isValid()),
+        [styles.focused]: isFocused,
+      }}
     >
       <span class={styles.formatLabel}>{label}</span>
       <input
@@ -149,20 +147,20 @@ function FormatInput(props: FormatInputProps) {
         value={inputValue}
         onInput={(e) => {
           const target = e.currentTarget as HTMLInputElement;
-          inputValue.value = target.value;
+          setInputValue(target.value);
         }}
         onFocus={() => {
-          isFocused.value = true;
+          setIsFocused(true);
         }}
         onBlur={() => {
-          isFocused.value = false;
+          setIsFocused(false);
 
-          const parsed = parse(inputValue.value);
+          const parsed = parse(inputValue());
           if (parsed) {
             batch(() => {
-              isValid.value = true;
+              setIsValid(true);
               onChange(parsed);
-              inputValue.value = value.value;
+              setInputValue(value());
             });
           }
         }}

@@ -1,26 +1,36 @@
-import { computed, effect, signal } from "@preact/signals";
+import { createAtom, compose, createEffect } from "@manyducks.co/dolla";
 import { hexFromRGB, rgbFromHSL } from "./utils/convert";
 import { makeDebouncer } from "./utils/makeDebouncer";
 
 const saveDebouncer = makeDebouncer(100);
 
-export const hsl = signal({ h: 1, s: 0.5, l: 0.7 });
+export const [hsl, setHSL] = createAtom({ h: 1, s: 0.5, l: 0.7 });
 
-export const rgb = computed(() => rgbFromHSL(hsl.value));
-export const hex = computed(() => hexFromRGB(rgb.value));
+export const rgb = compose(() => rgbFromHSL(hsl()));
+export const hex = compose(() => hexFromRGB(rgb()));
 
-effect(() => {
+export const isDark = compose(() => hsl().l < 0.5);
+
+const _ = createEffect(() => {
+  const value = hex();
   saveDebouncer.queue(() => {
-    localStorage.setItem("latestColor", hex.value);
+    localStorage.setItem("latestColor", value);
   });
 });
 
-export const isDark = computed(() => hsl.value.l < 0.5);
-
 export function patchHSL(patch: { h?: number; s?: number; l?: number }) {
-  const clone = Object.assign({}, hsl.value);
-  if (patch.h) clone.h = patch.h;
-  if (patch.s) clone.s = patch.s;
-  if (patch.l) clone.l = patch.l;
-  hsl.value = clone;
+  setHSL((current) => Object.assign({}, current, patch));
+}
+
+export function serializeHSL(value: {
+  h: number;
+  s: number;
+  l: number;
+}): string {
+  return `${value.h}-${value.s}-${value.l}`;
+}
+
+export function deserializeHSL(value: string) {
+  const [h, s, l] = value.split("-").map((part) => Number(part));
+  return { h, s, l };
 }

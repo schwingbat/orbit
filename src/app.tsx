@@ -1,12 +1,26 @@
-import "preact/debug";
+import {
+  Context,
+  createRoot,
+  getDebug,
+  html,
+  onEffect,
+  onMount,
+  Renderable,
+  setLogFilter,
+  setLogLevel,
+} from "@manyducks.co/dolla";
+import {
+  createRouterPlugin,
+  getRouter,
+  Outlet,
+} from "@manyducks.co/dolla/router";
+import {
+  createTranslatePlugin,
+  getTranslate,
+} from "@manyducks.co/dolla/translate";
 
-import { useComputed, useSignalEffect } from "@preact/signals";
-import { render } from "preact";
-import { useEffect, useRef } from "preact/hooks";
-
-import { hslFromRGB, rgbFromHex } from "./utils/convert";
-import { makeDebouncer } from "./utils/makeDebouncer";
-import { validateHex } from "./utils/validate";
+import { debounce } from "./utils/makeDebouncer";
+import { hslIsValid } from "./utils/validate";
 
 import styles from "./app.module.css";
 
@@ -14,141 +28,171 @@ import { DownloadSwatch } from "./components/DownloadSwatch/DownloadSwatch";
 import { Formats } from "./components/Formats/Formats";
 import { Wheel } from "./components/Wheel/Wheel";
 
+setLogLevel(import.meta.env.DEV ? "info" : "error");
+setLogFilter(
+  import.meta.env.DEV ? () => true : (name) => !name.startsWith("dolla"),
+);
+
 const appElement = document.querySelector("#app")! as HTMLElement;
 
-const debouncer = makeDebouncer(50, true);
+import {
+  deserializeHSL,
+  hex,
+  hsl,
+  isDark,
+  serializeHSL,
+  setHSL,
+} from "~/colors";
+import { LanguageSelect } from "./components/LanguageSelect/LanguageSelect";
+import { NavLink } from "./components/NavLink/NavLink";
 
-import { hex, hsl, patchHSL } from "~/colors";
+type OrbitProps = {
+  // data: string;
+  children: Renderable;
+};
 
-render(<Orbit />, appElement);
+function Orbit(this: Context, props: OrbitProps) {
+  const { t } = getTranslate(this);
+  const router = getRouter(this);
+  const debug = getDebug(this);
 
-function Orbit() {
-  const ignoreHashChange = useRef(false);
-
-  console.log("render Orbit");
-
-  useSignalEffect(() => {
-    const value = hex.value;
-    debouncer.queue(() => {
-      ignoreHashChange.current = true;
-      window.location.hash = value;
-    });
+  const updateColorParam = debounce(200, (value) => {
+    debug.info("color", value);
+    router.setQuery({ color: serializeHSL(value) });
   });
 
-  useEffect(() => {
-    const initialHashValue = window.location.hash;
-    if (initialHashValue && validateHex(initialHashValue)) {
-      hsl.value = hslFromRGB(rgbFromHex(initialHashValue));
+  let loaded = false;
+
+  onEffect(this, () => {
+    const value = hsl();
+    if (!loaded) {
+      loaded = true;
+      return;
     }
+    updateColorParam(value);
+  });
 
-    function onHashChange() {
-      if (ignoreHashChange.current) {
-        ignoreHashChange.current = false;
-        return;
-      }
-
-      const hash = window.location.hash.slice(1);
-
-      if (validateHex(hash)) {
-        const hsl = hslFromRGB(rgbFromHex(hash));
-        patchHSL(hsl);
+  onMount(this, () => {
+    const color = router.query().color;
+    if (color) {
+      // Set color from query param
+      const parsed = deserializeHSL(color);
+      if (hslIsValid(parsed)) {
+        setHSL(parsed);
       }
     }
-
-    window.addEventListener("hashchange", onHashChange);
 
     appElement.classList.remove("loading");
+  });
 
-    return () => {
-      window.removeEventListener("hashchange", onHashChange);
-    };
-  }, []);
-
-  const containerStyle = useComputed(() => `background-color: ${hex.value}`);
-
-  return (
-    <div class={styles.container} style={containerStyle}>
-      <aside class={styles.tools}>
-        <DownloadSwatch />
+  return html`
+    <div
+      class=${styles.container}
+      style=${{
+        "background-color": hex,
+        "--button-color": () => (isDark() ? "#fff" : "#000"),
+        "--button-color-bg-hover": () => (isDark() ? "#fff3" : "#0002"),
+      }}
+    >
+      <aside class=${styles.tools}>
+        <${LanguageSelect} />
+        <${DownloadSwatch} />
       </aside>
 
-      <main class={styles.controls}>
-        <Wheel />
-        <Formats />
-      </main>
+      ${props.children}
+
+      <nav class=${styles.tabs}>
+        <ul>
+          <li>
+            <${NavLink} href="/picker"> ${t("nav.picker")} <//>
+          </li>
+          <li>
+            <${NavLink} href="/favorites"> ${t("nav.favorites")} <//>
+          </li>
+        </ul>
+      </nav>
     </div>
-  );
+  `;
 }
 
-// const Orbit = createView(function () {
-//   this.setName("Orbit");
+function Picker() {
+  return html`
+    <main class=${styles.controls}>
+      <${Wheel} />
+      <${Formats} />
+    </main>
+  `;
+}
 
-//   let ignoreHashChange = false;
+function Favorites() {
+  return html`
+    <main class=${styles.controls}>
+      <h1>FAVORITES</h1>
+    </main>
+  `;
+}
 
-//   this.attachStore(ColorStore(window.location.hash));
-
-//   const { $hex, patchHSL } = this.useStore(ColorStore);
-
-//   const debouncer = makeDebouncer(50, true);
-
-//   this.watch([$hex], (hex) => {
-//     debouncer.queue(() => {
-//       ignoreHashChange = true;
-//       window.location.hash = hex;
-//     });
-//   });
-
-//   const onHashChange = () => {
-//     if (ignoreHashChange) {
-//       ignoreHashChange = false;
-//       return;
-//     }
-
-//     const hash = window.location.hash.slice(1);
-
-//     this.log({ hash, valid: validateHex(hash) });
-
-//     if (validateHex(hash)) {
-//       const hsl = hslFromRGB(rgbFromHex(hash));
-//       patchHSL(hsl);
-//     }
-//   };
-
-//   this.onMount(() => {
-//     onHashChange();
-//     window.addEventListener("hashchange", onHashChange);
-
-//     appElement.classList.remove("loading");
-//   });
-
-//   this.onUnmount(() => {
-//     window.removeEventListener("hashchange", onHashChange);
-//   });
-
-//   return (
-//     <div class={styles.container} style={{ backgroundColor: $hex }}>
-//       <aside class={styles.tools}>
-//         <DownloadSwatch />
-//       </aside>
-
-//       <main class={styles.controls}>
-//         <Wheel />
-//         <Formats />
-//       </main>
-//     </div>
-//   );
-// });
-
-// Dolla.watch([Dolla.i18n.$locale], (locale) => {
-//   Dolla.batch.write(() => {
-//     appElement.classList.forEach((className) => {
-//       if (className.startsWith("orbit-locale-")) {
-//         appElement.classList.remove(className);
-//       }
-//     });
-
-//     appElement.classList.add(`orbit-locale-${locale}`);
-//   });
-// });
-
-// Dolla.mount(appElement, Orbit);
+createRoot(appElement, { debug: true })
+  .plugin(
+    createTranslatePlugin({
+      locale: "ja",
+      translations: {
+        en: {
+          saturation: "SATURATION",
+          lightness: "LIGHTNESS",
+          download: "Download Swatch",
+          language: "LANGUAGE",
+          favorite: "ADD FAVORITE",
+          unfavorite: "REMOVE FAVORITE",
+          nav: {
+            favorites: "FAVORITES",
+            picker: "PICKER",
+          },
+        },
+        ja: {
+          saturation: "彩度",
+          lightness: "明度",
+          download: "スウォッチを入手",
+          language: "言語",
+          favorite: "おきに入り追加",
+          unfavorite: "おきに入り削除",
+          nav: {
+            favorites: "お気に入り",
+            picker: "カラーピッカー",
+          },
+        },
+      },
+    }),
+  )
+  .plugin(
+    createRouterPlugin({
+      hash: true,
+      preserveQuery: true,
+      routes: [
+        {
+          path: "",
+          view: Orbit,
+          routes: [
+            {
+              path: "/picker",
+              view: Picker,
+              // preload: () =>
+              //   new Promise((resolve) =>
+              //     setTimeout(resolve, Math.random() * 1000),
+              //   ),
+            },
+            {
+              path: "/favorites",
+              view: Favorites,
+              // preload: () =>
+              //   new Promise((resolve) =>
+              //     setTimeout(resolve, Math.random() * 1000),
+              //   ),
+            },
+            { path: "*", redirect: "/picker" },
+          ],
+        },
+      ],
+    }),
+  )
+  .mount(Outlet);

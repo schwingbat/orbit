@@ -1,3 +1,27 @@
+.tabs {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabs > ul {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabs > ul > li {
+  border: 1px solid var(--button-color);
+  line-height: 40px;
+  padding: 0 8px;
+  border-radius: 999px;
+}
+
 .container {
   position: fixed;
   top: 0;
@@ -15,7 +39,7 @@
   right: 0;
   left: 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 .controls {

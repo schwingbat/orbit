@@ -1,22 +1,20 @@
-import { useComputed } from "@preact/signals";
+import { Context } from "@manyducks.co/dolla";
+import { getTranslate } from "@manyducks.co/dolla/translate";
+import { hsl, patchHSL } from "~/colors";
 import { FlatSlider } from "./FlatSlider/FlatSlider";
 import styles from "./Wheel.module.css";
 import { WheelSlider } from "./WheelSlider/WheelSlider";
 
-import { hsl, patchHSL } from "~/colors";
+export function Wheel(this: Context) {
+  const { t } = getTranslate(this);
 
-export function Wheel() {
-  const hue = useComputed(() => hsl.value.h);
-  const sat = useComputed(() => hsl.value.s);
-  const light = useComputed(() => hsl.value.l);
+  const hue = () => hsl().h;
+  const sat = () => hsl().s;
+  const light = () => hsl().l;
 
-  const hueKnobColor = useComputed(() => `hsl(${hue.value * 360}, 100%, 50%)`);
-  const satKnobColor = useComputed(
-    () => `hsl(${hue.value * 360}, ${sat.value * 100}%, 50%)`
-  );
-  const lightKnobColor = useComputed(
-    () => `hsl(${hue.value * 360}, 0%, ${light.value * 100}%)`
-  );
+  const hueKnobColor = () => `hsl(${hue() * 360}, 100%, 50%)`;
+  const satKnobColor = () => `hsl(${hue() * 360}, ${sat() * 100}%, 50%)`;
+  const lightKnobColor = () => `hsl(${hue() * 360}, 0%, ${light() * 100}%)`;
 
   return (
     <div class={styles.wheel}>
@@ -33,7 +31,7 @@ export function Wheel() {
       <div class={styles.satAndLight}>
         <div class={styles.slider}>
           <FlatSlider
-            label="Saturation"
+            label={t("saturation")}
             value={sat}
             activeKnobColor={satKnobColor}
             onValueChange={(s) => {
@@ -43,7 +41,7 @@ export function Wheel() {
         </div>
         <div class={styles.slider}>
           <FlatSlider
-            label="Lightness"
+            label={t("lightness")}
             value={light}
             activeKnobColor={lightKnobColor}
             onValueChange={(l) => {
@@ -55,54 +53,3 @@ export function Wheel() {
     </div>
   );
 }
-
-// export const Wheel = createView(function () {
-//   const { $hsl, patchHSL } = this.useStore(ColorStore);
-
-//   const $hue = derive([$hsl], (hsl) => hsl.h);
-//   const $sat = derive([$hsl], (hsl) => hsl.s);
-//   const $light = derive([$hsl], (hsl) => hsl.l);
-
-//   return (
-//     <div class={styles.wheel}>
-//       <div class={styles.hue}>
-//         <WheelSlider
-//           $value={$hue}
-//           $activeKnobColor={derive([$hue], (h) => `hsl(${h * 360}, 100%, 50%)`)}
-//           onValueChange={(h) => {
-//             patchHSL({ h });
-//           }}
-//         />
-//       </div>
-
-//       <div class={styles.satAndLight}>
-//         <div class={styles.slider}>
-//           <FlatSlider
-//             $label={t("saturation")}
-//             $value={$sat}
-//             $activeKnobColor={derive(
-//               [$hue, $sat],
-//               (h, s) => `hsl(${h * 360}, ${s * 100}%, 50%)`
-//             )}
-//             onValueChange={(s) => {
-//               patchHSL({ s });
-//             }}
-//           />
-//         </div>
-//         <div class={styles.slider}>
-//           <FlatSlider
-//             $label={t("lightness")}
-//             $value={$light}
-//             $activeKnobColor={derive(
-//               [$hue, $light],
-//               (h, l) => `hsl(${h * 360}, 0%, ${l * 100}%)`
-//             )}
-//             onValueChange={(l) => {
-//               patchHSL({ l });
-//             }}
-//           />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// });
